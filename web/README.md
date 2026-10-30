@@ -1,0 +1,23 @@
+# เว็บ + LINE OA "ไร่ไม่เผา"
+
+| หน้า | ใช้ทำอะไร |
+|---|---|
+| `/` | หน้าแรก + โมเดล 3D หมุนได้ (แถบเลื่อนแยกชิ้นส่วน) |
+| `/liff` | หน้าเกษตรกรใน LINE: ยินยอม PDPA → แจ้งเศษพืช/จองคิว → รับ QR → สิทธิ์ของฉัน |
+| `/kiosk` | หน้าจอสัมผัสหน้าตู้ (เปิดบนแท็บเล็ต): สแกน QR → ความชื้น → โหมด → แปรรูป → ใบรับของเข้า LINE |
+| `/dashboard` | ผลกระทบ, คิววันนี้, สถานะตู้, แจ้งช่าง |
+| `/privacy` | นโยบายความเป็นส่วนตัว |
+
+- API อยู่ใน `api/` (Vercel Functions) ดูรายละเอียดใน `../docs/SRS.md` หัวข้อ 6
+- **ตัวเลขธุรกิจทั้งหมด** (ราคา ผลผลิต ความชื้นสูงสุด ค่า PM2.5) อยู่ที่ `shared/rules.js` ไฟล์เดียว
+- ข้อมูลจำลองของ Dashboard อยู่ที่ `src/lib/seed.js`
+
+```bash
+npm install
+npm run dev     # http://localhost:5173 (API ทำงานในเครื่องได้เลย ไม่ต้องใช้ Vercel CLI)
+npm test        # ทดสอบ API ทั้งหมด (จำลอง LINE)
+npm run build
+node scripts/make-richmenu.mjs   # สร้างรูป rich menu ใหม่ → ../docs/line/richmenu.png
+```
+
+Deploy และเชื่อม LINE: ดู [`../docs/LINE_SETUP.md`](../docs/LINE_SETUP.md)
