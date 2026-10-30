@@ -19,9 +19,12 @@ export default function ModelViewer() {
     const el = ref.current;
     if (!el) return;
     const onLoad = () => {
+      // ต้องเลือก animation แล้วสั่ง play ก่อนหนึ่งครั้ง model-viewer ถึงจะรู้ความยาว (duration) ให้เลื่อนได้
+      el.animationName = el.availableAnimations[0];
+      el.play();
       el.pause();
-      setDuration(el.duration || 0);
       el.currentTime = 0;
+      setDuration(el.duration || 0);
       walls.current = (el.model?.materials || [])
         .filter((m) => XRAY_MATERIALS.includes(m.name))
         .map((m) => ({ m, color: [...m.pbrMetallicRoughness.baseColorFactor] }));
@@ -35,7 +38,11 @@ export default function ModelViewer() {
   }, []);
 
   useEffect(() => {
-    if (ref.current && duration) ref.current.currentTime = explode * duration;
+    const el = ref.current;
+    if (!el || !duration) return;
+    el.currentTime = Math.min(explode, 0.999) * duration; // เวลาเท่ากับ duration พอดีจะวนกลับไปเฟรมแรก
+    const { theta, phi } = el.getCameraOrbit();
+    el.cameraOrbit = `${theta}rad ${phi}rad ${100 + 75 * explode}%`; // ถอยกล้องออกให้เห็นชิ้นส่วนที่แยกครบ
   }, [explode, duration]);
 
   useEffect(() => {
@@ -73,6 +80,7 @@ export default function ModelViewer() {
         shadow-intensity="1"
         exposure="1.05"
         camera-orbit="-35deg 75deg auto"
+        max-camera-orbit="auto auto 250%"
         style={{ width: '100%', height: '100%', background: 'transparent' }}
       />
       <div className="viewer-controls">
