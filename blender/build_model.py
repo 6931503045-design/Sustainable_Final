@@ -25,6 +25,9 @@ from bpy_extras.object_utils import world_to_camera_view
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 DO_RENDER = '--render' in argv
 QUICK = '--quick' in argv
+# --only front,xray,...  = render เฉพาะบางภาพ (front back cutaway trays xray dims phone exploded)
+ONLY = set(argv[argv.index('--only') + 1].split(',')) if '--only' in argv else None
+want = lambda view: DO_RENDER and (ONLY is None or view in ONLY)  # noqa: E731
 
 try:
     HERE = os.path.dirname(os.path.abspath(__file__))
@@ -88,13 +91,17 @@ def mat(name, color, metal=0.0, rough=0.5, emit=None, emit_strength=0.0, transmi
         bsdf.inputs['Emission Color'].default_value = (*hex_rgb(emit), 1)
         bsdf.inputs['Emission Strength'].default_value = emit_strength
     if image:
+        if emit_strength:  # หน้าจอ: แสงจากภาพอย่างเดียว ไม่สะท้อนไฟฉาก จะได้ไม่ซีด
+            bsdf.inputs['Base Color'].default_value = (0, 0, 0, 1)
         tex = nt.nodes.new('ShaderNodeTexImage')
         img = bpy.data.images.load(os.path.join(TEX, image), check_existing=True)
         img.pack()
         tex.image = img
-        nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
         if emit_strength:
             nt.links.new(tex.outputs['Color'], bsdf.inputs['Emission Color'])
+            bsdf.inputs['Emission Strength'].default_value = emit_strength
+        else:
+            nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
         if alpha_image:
             nt.links.new(tex.outputs['Alpha'], bsdf.inputs['Alpha'])
     MATS[name] = m
@@ -115,7 +122,9 @@ M_STEEL_DARK = mat('SteelDark', '#5d6369', metal=1.0, rough=0.45)
 M_MOTOR = mat('Motor', '#3a5a80', metal=0.3, rough=0.4)
 M_STRAW = mat('Straw', '#e3b23c', rough=0.5)
 M_ORANGE = mat('Orange', '#e07b39', rough=0.5)
-M_CHOPGREEN = mat('ModeGreen', '#6fbf73', rough=0.5)
+# สีโหมดตรงกับโปสเตอร์: A อัดเม็ด = เขียว, B อัดแท่ง = ส้ม, C สับ = ฟ้า
+M_MODE_A = mat('ModeA_Pellet', '#3f9b4b', rough=0.5)
+M_MODE_C = mat('ModeC_Chop', '#3b82c4', rough=0.5)
 M_RED = mat('Red', '#d62828', rough=0.3)
 M_YELLOW = mat('Yellow', '#ffd21f', rough=0.5)
 M_GLASS = mat('Glass', '#dfefff', rough=0.05, transmission=1.0)
@@ -131,12 +140,16 @@ M_PELLETS = mat('Pellets', '#a07a3f', rough=0.7)
 M_BRIQ = mat('Briquettes', '#5b4027', rough=0.85)
 M_SOLAR = mat('Solar', '#1b2a4a', metal=0.6, rough=0.15)
 M_FLOOR = mat('Floor', '#ffffff')
+M_XRAY = mat('XrayGlass', '#cfe8d4', rough=0.1)  # แผงโปร่งใสสำหรับภาพ X-ray
+M_XRAY.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = 0.06
+M_PHONE = mat('PhoneBody', '#15181c', metal=0.6, rough=0.25)
 
-M_SCREEN = mat('ScreenUI', '#000000', image='screen_ui.png', emit_strength=1.4, rough=0.2)
+M_SCREEN = mat('ScreenUI', '#000000', image='screen_ui.png', emit_strength=1.0, rough=0.2)
 M_BRAND = mat('BrandPlate', '#ffffff', image='brand_plate.png', rough=0.4)
 M_WARN = mat('WarningSticker', '#ffffff', image='warning.png', rough=0.5)
 M_DOORLBL = mat('DoorLabel', '#ffffff', image='door_label.png', rough=0.5)
 M_ESTOP = mat('EStopRing', '#ffffff', image='estop_ring.png', rough=0.5, alpha_image=True)
+M_PHONE_SCREEN = mat('PhoneScreen', '#000000', image='phone_line.png', emit_strength=1.0, rough=0.3)
 M_LBL = {k: mat(f'Label_{k}', '#ffffff', image=f'label_{k}.png', rough=0.5) for k in ('chop', 'pellet', 'briquette')}
 
 # ---------------------------------------------------------------- mesh helpers
@@ -351,6 +364,16 @@ box('Top_Back', (W, D / 2 - HOLE[3], T), (0, (HOLE[3] + D / 2) / 2, zt), M_GREEN
 box('Top_Left', (HOLE[0] + W / 2, HOLE[3] - HOLE[2], T), ((-W / 2 + HOLE[0]) / 2, (HOLE[2] + HOLE[3]) / 2, zt), M_GREEN, S)
 box('Top_Right', (W / 2 - HOLE[1], HOLE[3] - HOLE[2], T), ((HOLE[1] + W / 2) / 2, (HOLE[2] + HOLE[3]) / 2, zt), M_GREEN, S)
 decal('Sticker_Warning', M_WARN, 0.24, 0.30, (W / 2 + 0.001, -0.08, 1.30), 'right', S)
+# โครงเหล็กตามขอบตู้ (เห็นชัดในภาพ X-ray)
+FR = 0.03
+for sx in (-1, 1):
+    for sy in (-1, 1):
+        box(f'Frame_Post_{sx}{sy}', (FR, FR, H - 0.05), (sx * (W / 2 - FR / 2 + 0.004), sy * (D / 2 - FR / 2 + 0.004), 0.05 + (H - 0.05) / 2), M_STEEL, S)
+for z in (0.05 + FR / 2, H - FR / 2 + 0.004):
+    for sy in (-1, 1):
+        box(f'Frame_RailX_{z:.2f}_{sy}', (W + 0.008, FR, FR), (0, sy * (D / 2 - FR / 2 + 0.004), z), M_STEEL, S)
+    for sx in (-1, 1):
+        box(f'Frame_RailY_{z:.2f}_{sx}', (FR, D + 0.008, FR), (sx * (W / 2 - FR / 2 + 0.004), 0, z), M_STEEL, S)
 
 # ================================================================ 2. แผงหน้า (FrontPanels)
 F = C['FrontPanels']
@@ -412,6 +435,14 @@ for s in (-1, 1):
     cyl(f'Magnet_Cap{s}', 0.02, 0.02, (s * 0.11, -0.02, 1.64), M_STEEL, P, axis='X')
 box('Moisture_Sensor', (0.03, 0.06, 0.045), (0.185, -0.02, 1.70), M_SENSOR, P)
 cyl('Moisture_Probe', 0.004, 0.06, (0.145, -0.02, 1.70), M_STEEL, P, axis='X', segs=8)
+
+
+def make_straw(bm, mtx):
+    res = bmesh.ops.create_cube(bm, size=1.0, matrix=mtx)
+    bmesh.ops.scale(bm, vec=(0.004, 0.004, random.uniform(0.04, 0.11)), verts=res['verts'], space=mtx.inverted())
+
+
+scatter('Hopper_Straw', P, M_STRAW, 900, make_straw, ((-0.17, 0.17), (-0.14, 0.10), (H - 0.03, H + 0.07)))  # กองฟางที่เพิ่งเทลงช่องป้อน
 
 # ================================================================ 5. เครื่องสับ (HammerMill) 100-140 ซม.
 HM = C['HammerMill']
@@ -518,7 +549,7 @@ beam('Press_DropGuide', (RX, Y_FRONT - 0.07, RZ - 0.04), (RX, -0.20, 0.30), 0.08
 
 # ================================================================ 10. ถาดรับ 3 ช่อง + ตาชั่ง (Trays) 0-30 ซม.
 TR = C['Trays']
-TRAYS = (('pellet', -0.278, M_STRAW), ('chop', 0.0, M_CHOPGREEN), ('briquette', 0.278, M_ORANGE))
+TRAYS = (('pellet', -0.278, M_MODE_A), ('chop', 0.0, M_MODE_C), ('briquette', 0.278, M_ORANGE))  # A / C / B
 for key, x, m_col in TRAYS:
     for sx in (-1, 1):
         for sy in (-1, 1):
@@ -572,6 +603,17 @@ for k in range(8):
     box(f'Vent_{k}', (0.24, 0.012, 0.012), (0.18, YB + 0.006, 1.45 + k * 0.028), M_DARK, R)
 pipe('PowerCable', [(0.10, YB + 0.10, 0.44), (0.10, YB + 0.18, 0.15), (0.0, YB + 0.40, 0.01)], 0.009, M_RUBBER, R)
 
+# ================================================================ 12. ของประกอบฉาก (ไม่ export): มือถือโชว์ใบรับของ LINE
+PROPS = bpy.data.collections.new('Props')
+scene.collection.children.link(PROPS)
+PHONE_AT = Vector((4.0, 0.0, 1.0))  # วางห่างตู้ ไม่ให้ติดภาพอื่น
+phone = bevel(box('Phone', (0.075, 0.0085, 0.162), PHONE_AT, M_PHONE, PROPS), 0.0035)
+phone.modifiers['Bevel'].segments = 4
+decal('Phone_Screen', M_PHONE_SCREEN, 0.069, 0.149, PHONE_AT + Vector((0, -0.0044, 0)), 'front', PROPS)
+cyl('Phone_Camera', 0.004, 0.002, PHONE_AT + Vector((0, -0.0045, 0.0755)), M_LENS, PROPS, axis='Y')
+for o in PROPS.objects:
+    o.hide_render = True
+
 # ================================================================ ฉาก: พื้น ไฟ กล้อง
 bpy.ops.mesh.primitive_plane_add(size=30)
 floor = bpy.context.active_object
@@ -593,9 +635,9 @@ def light(name, loc, energy, size, color=(1, 1, 1)):
     return ob
 
 
-light('Key', (-2.6, -2.8, 3.6), 900, 2.5)
-light('Fill', (3.0, -2.2, 1.8), 300, 3.0, (0.92, 0.96, 1.0))
-light('Rim', (1.5, 3.2, 3.2), 600, 2.0)
+light('Key', (-2.6, -2.8, 3.6), 600, 2.5)
+light('Fill', (3.0, -2.2, 1.8), 180, 3.0, (0.92, 0.96, 1.0))
+light('Rim', (1.5, 3.2, 3.2), 400, 2.0)
 world = bpy.data.worlds.new('World')
 scene.world = world
 world.use_nodes = True
@@ -618,7 +660,16 @@ CAMS = {
     'cutaway': camera('CAM_Cutaway', (-2.0, -3.0, 1.5), (0, 0, 1.0), 54),
     'back': camera('CAM_Back', (2.4, 3.4, 1.65), (0, 0, 1.06), 56),
     'exploded': camera('CAM_Exploded', (-3.6, -4.8, 2.3), (0, -0.1, 1.05), 64),
+    'xray': camera('CAM_Xray', (-2.5, -3.6, 1.6), (0, 0, 1.06), 56),
+    'phone': camera('CAM_Phone', tuple(PHONE_AT + Vector((-0.16, -0.30, 0.05))), tuple(PHONE_AT), 50),
 }
+# กล้อง orthographic สำหรับภาพบอกขนาด (สเกลเท่ากันทั้งหน้าและข้าง ความสูงตรงกันทุก pixel)
+DIM_SCALE, DIM_Z = 2.5, 1.12
+for key, loc in (('dim_front', (0, -5, DIM_Z)), ('dim_side', (5, 0, DIM_Z))):
+    CAMS[key] = camera(f'CAM_{key}', loc, (0, 0, DIM_Z), 50)
+    CAMS[key].data.type = 'ORTHO'
+    CAMS[key].data.ortho_scale = DIM_SCALE
+    CAMS[key].data.sensor_fit = 'VERTICAL'
 scene.camera = CAMS['front']
 
 # ---------------------------------------------------------------- การแสดงผล / render
@@ -627,6 +678,7 @@ scene.cycles.device = 'CPU'
 scene.cycles.samples = 24 if QUICK else 128
 scene.cycles.use_denoising = True
 scene.render.film_transparent = True
+scene.view_settings.view_transform = 'Standard'  # สีตรงกับโค้ดสีของแบรนด์ (AgX ทำให้สีซีด)
 scene.render.image_settings.file_format = 'PNG'
 scene.render.image_settings.color_mode = 'RGBA'
 scene.render.resolution_percentage = 40 if QUICK else 100
@@ -642,6 +694,8 @@ ANNOTATE = {  # จุดชี้ในภาพ: ชื่อ object -> ข้
                 ('Mill_Motor', 'มอเตอร์เครื่องสับ ~3 kW'), ('DustDuct', 'ท่อดูดฝุ่น')],
     'exploded': [(f'@{k}', v) for k, v in PART_LABELS.items() if k not in ('Shell', 'FrontPanels', 'Controls')],
 }
+ANNOTATE['xray'] = [a for a in ANNOTATE['cutaway'] if a[0] not in ('DustDuct', 'Mill_Screen_Coarse')] + [
+    ('Screen_Display', 'หน้าจอสัมผัส'), ('QR_Scanner', 'สแกน QR'), ('Camera_Lens', 'กล้องถ่ายหลักฐาน'), ('EStop_Button', 'ปุ่มหยุดฉุกเฉิน')]
 
 
 def set_hidden(names, hidden):
@@ -659,6 +713,8 @@ def anchor(key):
 
 
 def render(view, cam_key, res=(1200, 1600)):
+    if not want(view):
+        return
     scene.camera = CAMS[cam_key]
     scene.render.resolution_x, scene.render.resolution_y = res
     path = os.path.join(OUT, f'render_{view}.png')
@@ -680,9 +736,64 @@ CUTAWAY_HIDE = ['FrontPanels', 'Controls', 'Panel_Left', 'Top_Front', 'Top_Left'
 SHELL_PANELS = ['Panel_Left', 'Panel_Right', 'Panel_Back', 'Top_Front', 'Top_Back', 'Top_Left', 'Top_Right', 'Sticker_Warning']
 EXPLODED_HIDE = ['FrontPanels', 'Controls'] + SHELL_PANELS + [f'Vent_{k}' for k in range(8)]
 TRAY_PULL = 0.20
+XRAY_PANELS = [n for n in SHELL_PANELS[:-1] if n != 'Panel_Back'] + [o.name for o in C['FrontPanels'].objects if o.name.startswith(('Door_', 'ControlPanel', 'Fascia'))]
+
+
+def xray(on):
+    """สลับแผงตู้เป็นกระจกโปร่ง (เก็บวัสดุเดิมไว้คืน)"""
+    for n in XRAY_PANELS:
+        o = bpy.data.objects[n]
+        if on:
+            o['orig_mat'] = o.data.materials[0].name
+            o.data.materials[0] = M_XRAY
+        elif 'orig_mat' in o:
+            o.data.materials[0] = bpy.data.materials[o['orig_mat']]
+            del o['orig_mat']
+    set_hidden(['Door_Label', 'Door_Window', 'Frame_T', 'Frame_B', 'Frame_L', 'Frame_R'], on)
+
+
+def render_dims():
+    """ภาพบอกขนาด: ด้านหน้า (X-ray) + ด้านข้าง แบบ orthographic พร้อมจุดอ้างอิงให้ textures/compose.mjs วาดเส้น"""
+    if not want('dims'):
+        return
+    res = (1000, 1500)
+    pct = scene.render.resolution_percentage / 100
+    meta = {'height': int(res[1] * pct), 'views': {}}
+    pts = {
+        'dim_front': {'z': [(-W / 2, -D / 2, z) for z in (0, 0.30, 0.85, 1.00, 1.40, H)], 'w': [(-W / 2, -D / 2, 0), (W / 2, -D / 2, 0)]},
+        'dim_side': {'z': [(W / 2, -D / 2, 0), (W / 2, -D / 2, H)], 'd': [(W / 2, -D / 2, 0), (W / 2, D / 2, 0)]},
+    }
+    for key in ('dim_front', 'dim_side'):
+        if key == 'dim_front':
+            xray(True)
+        scene.camera = CAMS[key]
+        scene.render.resolution_x, scene.render.resolution_y = res
+        scene.render.filepath = os.path.join(OUT, f'render_{key}.png')
+        bpy.ops.render.render(write_still=True)
+        if key == 'dim_front':
+            xray(False)
+        proj = lambda co: (lambda p: [round(p.x, 4), round(1 - p.y, 4)])(world_to_camera_view(scene, scene.camera, Vector(co)))  # noqa: E731
+        meta['views'][key] = {'image': f'render_{key}.png', 'width': int(res[0] * pct), **{k: [proj(c) for c in v] for k, v in pts[key].items()}}
+    with open(os.path.join(OUT, 'render_dims.json'), 'w', encoding='utf-8') as f:
+        json.dump(meta, f, indent=1)
+    print('rendered dims')
+
+
 if DO_RENDER:
     render('front', 'front')
     render('back', 'back')
+    xray(True)
+    render('xray', 'xray')
+    xray(False)
+    render_dims()
+    if want('phone'):
+        for o in PROPS.objects:
+            o.hide_render = False
+        floor.hide_render = True  # มือถือลอยตัว ไม่ต้องมีเงาพื้น
+        render('phone', 'phone', (900, 1400))
+        floor.hide_render = False
+        for o in PROPS.objects:
+            o.hide_render = True
     set_hidden(CUTAWAY_HIDE, True)
     for o in C['Trays'].objects:
         o.location.y -= TRAY_PULL
@@ -691,7 +802,7 @@ if DO_RENDER:
     scene.render.film_transparent = False
     scene.render.image_settings.file_format = 'JPEG'
     scene.render.image_settings.color_mode = 'RGB'
-    for key, x, _ in TRAYS:
+    for key, x, _ in (TRAYS if want('trays') else ()):
         target = (x, -0.05 - TRAY_PULL + 0.02, 0.12)
         CAMS[f'tray_{key}'] = camera(f'CAM_Tray_{key}', (x + 0.06, target[1] - 0.42, 0.62), target, 62)
         scene.camera = CAMS[f'tray_{key}']
@@ -722,7 +833,7 @@ for c_name, coll in C.items():
         o.keyframe_insert('location', frame=60)
         o.location = o.location - Vector(off)
 
-if DO_RENDER:
+if want('exploded'):
     scene.frame_set(60)
     set_hidden(EXPLODED_HIDE, True)  # ภาพแยกชิ้นโชว์เฉพาะกลไกภายใน (แผงหน้าดูได้จากภาพ front)
     render('exploded', 'exploded', (1600, 1600))

@@ -24,6 +24,7 @@ const browser = await chromium.launch();
 const page = await browser.newPage();
 for (const f of fs.readdirSync(out).filter((n) => /^render_.*\.json$/.test(n))) {
   const meta = JSON.parse(fs.readFileSync(path.join(out, f), 'utf8'));
+  if (!meta.points) continue; // render_dims.json ใช้กับ compose.mjs
   const { width: w, height: h } = meta;
   const W = w + 2 * MARGIN;
   const left = layout(meta.points.filter((p) => p.x < 0.5), h);

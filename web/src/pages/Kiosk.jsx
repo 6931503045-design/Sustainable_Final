@@ -1,12 +1,13 @@
 // หน้าจอสัมผัสหน้าตู้ (จำลองบนแท็บเล็ต): สแกน QR → วัดความชื้น → เลือกโหมด → แปรรูป → ชั่ง → ส่งใบรับของเข้า LINE
 import { useEffect, useRef, useState } from 'react';
-import { MODES, MOISTURE_MAX, PELLET_TYPES, RESIDUES, needsFlush, round } from '../../shared/rules.js';
+import { MODES, MOISTURE_MAX, PELLET_TYPES, needsFlush, residueName, round } from '../../shared/rules.js';
 import { api, kg, local, thb } from '../lib/client.js';
 
 const MACHINE_ID = 'RMP-01';
 // คำสั่งซื้อจำลองจากผู้รับซื้อ (ระบบจริงดึงจากฐานข้อมูลคำสั่งซื้อ)
 const ORDERS = [
   { buyer: 'ฟาร์มเห็ดบ้านดู่', mode: 'chop' },
+  { buyer: 'สวนลำไยแม่สาย (วัสดุคลุมดิน)', mode: 'chop' },
   { buyer: 'สหกรณ์โคนมแม่จัน', mode: 'pellet', pelletType: 'feed' },
   { buyer: 'โรงอบลำไยเวียงชัย', mode: 'briquette' },
 ];
@@ -106,7 +107,7 @@ export default function Kiosk() {
       const purpose = Math.random() < 0.6 ? 'sell' : 'self';
       const out = await api('lots', {
         method: 'POST',
-        data: { demo: true, name: 'ผู้เยี่ยมชม บูธ', residue: 'corn_cob', estKg: 50 + Math.round(Math.random() * 100), village: 'บูธนิทรรศการ', purpose, wantMode: 'pellet', consentAt: new Date().toISOString() },
+        data: { demo: true, name: 'ผู้เยี่ยมชม บูธ', residue: 'corn', estKg: 50 + Math.round(Math.random() * 100), village: 'บูธนิทรรศการ', purpose, wantMode: 'pellet', consentAt: new Date().toISOString() },
       });
       loadToken(out.token);
     } catch (e) {
@@ -128,7 +129,7 @@ export default function Kiosk() {
       ['📸 ถ่ายรูปวัตถุดิบ', 900],
       ...(choice.mode === 'briquette' ? [['🔥 อุ่นขดลวดเกลียวอัด (จริง 10–15 นาที · เร่งเวลา)', 2400]] : []),
       ['⚙️ เครื่องสับกำลังทำงาน', 2200],
-      [`↪️ ลิ้นสลับทาง → ${m.th}`, 900],
+      [`↪️ ลิ้นสลับทาง → ${m.code} ${m.th}`, 900],
       ...(choice.mode === 'chop' ? [] : [[choice.mode === 'pellet' ? '🟤 แม่พิมพ์อัดเม็ด' : '🪵 เกลียวอัดแท่ง + ตัดท่อน', 2600]]),
       ['⚖️ ชั่งน้ำหนักสินค้า', 1100],
     ];
@@ -192,7 +193,7 @@ export default function Kiosk() {
       {lot && ['measure', 'wet', 'mode', 'flush'].includes(step) && (
         <div className="k-stats">
           <div>
-            <small>{RESIDUES[lot.residue]} · น้ำหนักรับเข้า</small>
+            <small>{residueName(lot.residue)} · น้ำหนักรับเข้า{lot.driver && ` · 🛻 ส่งโดย ${lot.driver.name}`}</small>
             <b>{kg(lot.receivedKg)}</b>
           </div>
           <div>
@@ -224,8 +225,9 @@ export default function Kiosk() {
                 style={{ background: m.color }}
                 onClick={() => setChoice({ ...choice, mode: m.key })}
               >
+                <i className="k-code">{m.code}</i>
                 <b>{m.th}</b>
-                <span>{m.product}</span>
+                <span>{m.products.join(' / ')}</span>
               </button>
             ))}
           </div>
@@ -284,7 +286,7 @@ export default function Kiosk() {
               <b>{kg(result.job.inputKg)}</b>
             </div>
             <div>
-              <small>ได้{MODES[result.job.mode].th}</small>
+              <small>ได้ {MODES[result.job.mode].code} {MODES[result.job.mode].th}</small>
               <b>{kg(result.job.outputKg)}</b>
             </div>
             <div>
@@ -292,6 +294,11 @@ export default function Kiosk() {
               <b>{thb(Math.abs(result.job.amount))}</b>
             </div>
           </div>
+          {result.job.pickupFee > 0 && (
+            <p>
+              หักค่ารถ {thb(result.job.pickupFee)} · คนขับ {result.job.driverName} ได้ {thb(result.job.driverEarn)}
+            </p>
+          )}
           <p className="good">🌱 ลดการเผาได้ {kg(result.job.savedKg)} ≈ PM2.5 {result.job.pm25g} กรัม</p>
           <p>{result.pushed ? 'ส่งใบรับของเข้า LINE ของเจ้าของล็อตแล้ว ✓' : lot.hasLine ? `ส่งเข้า LINE ไม่สำเร็จ ${result.pushError || ''}` : 'ล็อตทดลอง: ไม่ได้ส่งเข้า LINE'}</p>
           <button className="k-btn" onClick={reset}>

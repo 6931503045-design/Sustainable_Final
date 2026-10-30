@@ -119,7 +119,7 @@ tr.seed td { color: #7a857d; }
 .kiosk .good { color: #8fe39a; }
 .kiosk .bad { color: #ff8a7a; }
 .k-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.k-modes button { border: 0; border-radius: 24px; min-height: 180px; color: var(--ink); cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; padding: 12px; outline: 0 solid #fff; transition: outline-width .15s; }
+.k-modes button { border: 0; color: #fff !important; border-radius: 24px; min-height: 180px; color: var(--ink); cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; padding: 12px; outline: 0 solid #fff; transition: outline-width .15s; }
 .k-modes button b { font-size: clamp(1.8rem, 4vw, 3rem); }
 .k-modes button.on { outline-width: 8px; }
 .k-modes button:disabled { opacity: .3; }
@@ -143,3 +143,24 @@ tr.seed td { color: #7a857d; }
   .grid3, .grid4, .steps, .k-stats, .k-receipt { grid-template-columns: 1fr; }
   .nav nav { gap: 12px; font-size: .85rem; }
 }
+
+/* ราคา / รับของ / คนขับ */
+.code { display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 6px; color: #fff; font-weight: 700; font-size: .9em; }
+.tight { margin: 4px 0; padding-left: 20px; }
+.prices td { padding: 6px 4px; }
+.prices .num { text-align: right; font-weight: 600; white-space: nowrap; }
+.quote { background: #eef6ef; border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+.quote .row { flex-wrap: nowrap; }
+.quote .total { border-top: 1px dashed #9cb8a1; margin-top: 6px; padding-top: 6px; font-size: 1.1rem; color: var(--green); }
+.choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.choice button { border: 2px solid #cfd4c8; background: #fff; border-radius: 12px; padding: 12px 8px; cursor: pointer; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
+.choice button small { font-weight: 400; color: var(--muted); font-size: .78rem; }
+.choice button.on { border-color: var(--green); background: #eef6ef; }
+.pickup-box { background: #fff8ec; border: 1px solid #f1d9ad; border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+.btn.ghost-sm { border-color: #cfd4c8; color: var(--muted); padding: 8px 12px; font-weight: 400; }
+.status { background: #f4f6f1; border-radius: 10px; padding: 8px 12px; margin: 6px 0; font-size: .9rem; }
+.job .earn { font-weight: 700; color: var(--green); font-size: 1.2rem; }
+.job p { margin: 6px 0; color: #3b4a40; }
+.job .row { margin-top: 8px; }
+.k-code { font-style: normal; background: #ffffffcc; color: var(--ink); border-radius: 10px; padding: 0 14px; font-size: 1.6rem; font-weight: 700; }
+.nav nav { flex-wrap: wrap; }

@@ -48,3 +48,30 @@ export async function removeWhere(list, pred) {
   }
   return all.length - keep.length;
 }
+
+// ---- key/value (ใช้กับงานรับของที่สถานะเปลี่ยนได้) ----
+export async function kvGet(key) {
+  if (persistent) {
+    const v = await redis('GET', key);
+    return v ? JSON.parse(v) : null;
+  }
+  return mem.has(`kv:${key}`) ? structuredClone(mem.get(`kv:${key}`)) : null;
+}
+
+export async function kvSet(key, value) {
+  if (persistent) return redis('SET', key, JSON.stringify(value));
+  mem.set(`kv:${key}`, structuredClone(value));
+}
+
+/** ตั้งค่าเฉพาะเมื่อยังไม่มี (ใช้กันคนขับ 2 คนรับงานเดียวกัน) คืน true ถ้าได้สิทธิ์ */
+export async function kvSetNX(key, value) {
+  if (persistent) return (await redis('SET', key, JSON.stringify(value), 'NX')) === 'OK';
+  if (mem.has(`kv:${key}`)) return false;
+  mem.set(`kv:${key}`, value);
+  return true;
+}
+
+export async function kvDel(key) {
+  if (persistent) return redis('DEL', key);
+  mem.delete(`kv:${key}`);
+}

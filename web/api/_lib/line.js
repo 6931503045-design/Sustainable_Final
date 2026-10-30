@@ -32,6 +32,8 @@ async function call(path, body) {
 }
 
 export const push = (to, messages) => call('/v2/bot/message/push', { to, messages });
+/** ส่งถึงหลายคนพร้อมกัน (สูงสุด 500 คน/ครั้ง) — นับโควตาตามจำนวนผู้รับ */
+export const multicast = (to, messages) => (to.length ? call('/v2/bot/message/multicast', { to: to.slice(0, 500), messages }) : Promise.resolve());
 export const reply = (replyToken, messages) => call('/v2/bot/message/reply', { replyToken, messages });
 
 export function validSignature(rawBody, signature) {

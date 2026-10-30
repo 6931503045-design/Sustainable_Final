@@ -30,11 +30,13 @@ const { DELETE: eraseMe } = await import('../api/me.js');
 const { GET: stats } = await import('../api/stats.js');
 const { POST: maintenance } = await import('../api/maintenance.js');
 const { GET: qr } = await import('../api/qr.js');
-const { needsFlush, settle, maskName } = await import('../shared/rules.js');
+const { needsFlush, settle, maskName, MACHINE } = await import('../shared/rules.js');
+const { POST: registerDriver, GET: driverInfo } = await import('../api/drivers.js');
+const { GET: listPickups, POST: pickupAction } = await import('../api/pickups.js');
 
 const req = (path, data, headers = {}) =>
   new Request(`https://rmp.test/api/${path}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(data) });
-const lotBody = { residue: 'corn_cob', estKg: 100, village: 'บ้านห้วยไคร้', purpose: 'sell', slot: new Date().toISOString(), consentAt: new Date().toISOString() };
+const lotBody = { residue: 'corn', estKg: 100, village: 'บ้านห้วยไคร้', purpose: 'sell', slot: new Date().toISOString(), consentAt: new Date().toISOString() };
 
 beforeEach(() => {
   calls.length = 0;
@@ -113,7 +115,9 @@ test('webhook ตรวจลายเซ็น และตอบกลับ',
   const ok = await webhook(new Request('https://rmp.test/api/webhook', { method: 'POST', body: raw, headers: { 'x-line-signature': sig } }));
   assert.equal(ok.status, 200);
   const r = JSON.parse(calls.find((c) => c.url.endsWith('/message/reply')).body);
-  assert.match(r.messages[0].text, /ราคารับซื้อ/);
+  assert.equal(r.messages[0].type, 'flex');
+  assert.match(r.messages[0].altText, /ราคารับซื้อ/);
+  assert.ok(r.messages[0].quickReply.items.length >= 3);
 });
 
 test('แจ้งช่างผ่าน LINE', async () => {
@@ -123,8 +127,80 @@ test('แจ้งช่างผ่าน LINE', async () => {
 });
 
 test('กติกาธุรกิจ', () => {
-  assert.deepEqual(settle({ mode: 'chop', purpose: 'self', inputKg: 100, outputKg: 95 }), { amount: -30, savedKg: 100, pm25g: 800, yieldPct: 95 });
+  assert.deepEqual(settle({ mode: 'chop', purpose: 'self', inputKg: 100, outputKg: 95 }), { gross: -30, pickupFee: 0, driverEarn: 0, amount: -30, savedKg: 100, pm25g: 800, yieldPct: 95 });
+  // ขายฟาง 200 กก. ชื้น 17% (ลด 10%) เรียกรถ 10 กม.: 200×1.2×0.9 = 216, ค่ารถ 20+40+20 = 80
+  const s2 = settle({ residue: 'rice_straw', purpose: 'sell', inputKg: 200, moisture: 17, pickupKm: 10 });
+  assert.equal(s2.gross, 216);
+  assert.equal(s2.pickupFee, 80);
+  assert.equal(s2.driverEarn, 72);
+  assert.equal(s2.amount, 136);
   assert.equal(needsFlush({ mode: 'briquette' }, { mode: 'pellet', pelletType: 'feed' }), true);
   assert.equal(needsFlush({ mode: 'pellet', pelletType: 'feed' }, { mode: 'pellet', pelletType: 'fuel' }), false);
   assert.equal(maskName('สมชาย ใจดี'), 'สมชาย ใ.');
+});
+
+
+const near = { lat: MACHINE.lat + 0.03, lng: MACHINE.lng - 0.02 };
+const pickupBody = { ...lotBody, estKg: 200, delivery: 'pickup', loc: near, landmark: 'หลังวัด', phone: '0811111111' };
+const get = (path) => new Request(`https://rmp.test/api/${path}`);
+
+test('เรียกรถ: ต้องมีพิกัดและเบอร์ และไม่เกินรัศมี', async () => {
+  assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, loc: null }))).status, 400);
+  assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, phone: '12' }))).status, 400);
+  assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, loc: { lat: 18.79, lng: 98.98 } }))).status, 400); // เชียงใหม่ ไกลเกิน
+});
+
+test('ระบบรับของแบบ Grab: แจ้งคนขับ → รับงาน (กันรับซ้ำ) → รับของ → ชั่งที่ตู้ → จ่ายเกษตรกรและคนขับ', async () => {
+  // คนขับ 2 คน (คนแรกใช้ LINE จริง)
+  const realFetchLine = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => {
+    if (String(url).endsWith('/oauth2/v2.1/verify') && new URLSearchParams(opts.body).get('id_token') === 'driver') return Response.json({ sub: 'Udriver', name: 'บุญมี ขับดี' });
+    return realFetchLine(url, opts);
+  };
+  const d1 = await (await registerDriver(req('drivers', { idToken: 'driver', vehicle: 'pickup', plate: 'บข 1234', phone: '0899999999', consentAt: 'x' }))).json();
+  const d2 = await (await registerDriver(req('drivers', { demo: true, name: 'คนขับสอง', vehicle: 'etan', plate: 'กก 1', phone: '0822222222', consentAt: 'x' }))).json();
+  assert.equal((await registerDriver(req('drivers', { demo: true, vehicle: 'ufo', plate: 'x', phone: '0811111111', consentAt: 'x' }))).status, 400);
+
+  calls.length = 0;
+  const lotRes = await (await createLot(req('lots', { ...pickupBody, idToken: 'good' }))).json();
+  assert.ok(lotRes.quote.pickupFee > 0 && lotRes.quote.amount < lotRes.quote.gross);
+  const mc = calls.find((c) => c.url.endsWith('/message/multicast'));
+  assert.ok(mc, 'ต้องแจ้งคนขับที่ใช้ LINE');
+  assert.deepEqual(JSON.parse(mc.body).to, ['Udriver']);
+
+  // รายการงานสาธารณะไม่มีพิกัดจริง/เบอร์/QR
+  const open = (await (await listPickups(get(`pickups?lat=${near.lat}&lng=${near.lng}`))).json()).pickups;
+  const job = open.find((p) => p.lotId === lotRes.lot.id);
+  assert.ok(job && job.fromYouKm < 1);
+  assert.ok(!JSON.stringify(open).includes('0811111111') && !('lotToken' in job) && !('loc' in job));
+
+  calls.length = 0;
+  const acc = await pickupAction(req('pickups', { action: 'accept', lotId: job.lotId, driverToken: d1.driverToken }));
+  const accOut = await acc.json();
+  assert.equal(acc.status, 200);
+  assert.equal(accOut.farmerNotified, true);
+  assert.equal(accOut.pickup.farmerPhone, '0811111111');
+  assert.ok(accOut.pickup.lotToken);
+  assert.equal(JSON.parse(calls.find((c) => JSON.parse(c.body).to === 'Ufarmer').body).messages[0].altText.startsWith('มีคนขับรับงานแล้ว'), true);
+  assert.equal((await pickupAction(req('pickups', { action: 'accept', lotId: job.lotId, driverToken: d2.driverToken }))).status, 409);
+  assert.equal((await pickupAction(req('pickups', { action: 'picked', lotId: job.lotId, driverToken: d2.driverToken }))).status, 403);
+  assert.equal((await pickupAction(req('pickups', { action: 'picked', lotId: job.lotId, driverToken: d1.driverToken }))).status, 200);
+
+  const status = (await (await listPickups(get(`pickups?lot=${job.lotId}`))).json()).pickup;
+  assert.equal(status.status, 'picked');
+  assert.equal(status.driver.plate, 'บข 1234');
+
+  const { lot } = await (await scan(req('scan', { token: accOut.pickup.lotToken }))).json();
+  assert.equal(lot.driver.plate, 'บข 1234');
+  calls.length = 0;
+  const rec = await (await receipt(req('receipt', { token: accOut.pickup.lotToken, mode: 'chop', moisture: 12, outputKg: lot.receivedKg * 0.9 }))).json();
+  assert.ok(rec.job.pickupFee > 0);
+  assert.equal(rec.job.amount, Math.round((rec.job.gross - rec.job.pickupFee) * 100) / 100);
+  const to = calls.map((c) => JSON.parse(c.body).to);
+  assert.deepEqual(to.sort(), ['Udriver', 'Ufarmer']);
+
+  const info = await (await driverInfo(get(`drivers?token=${encodeURIComponent(d1.driverToken)}`))).json();
+  assert.equal(info.earned, rec.job.driverEarn);
+  assert.equal(info.jobs[0].farmerPhone, null); // งานจบแล้วไม่เปิดเบอร์อีก
+  globalThis.fetch = realFetchLine;
 });

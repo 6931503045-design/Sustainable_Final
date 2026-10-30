@@ -1,7 +1,7 @@
 // Dashboard ผลกระทบ: รวมข้อมูลจริงจาก API + งานในเครื่องนี้ + ข้อมูลจำลอง (เปิด/ปิดได้)
 import { useEffect, useMemo, useState } from 'react';
 import { Nav } from '../App.jsx';
-import { MODES, PELLET_TYPES, PURPOSES, RESIDUES, SERVICE_HOURS } from '../../shared/rules.js';
+import { MODES, PELLET_TYPES, PURPOSES, SERVICE_HOURS, residueName } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
 import { SEED_MACHINE_HOURS, seedJobs } from '../lib/seed.js';
 
@@ -66,7 +66,7 @@ export default function Dashboard() {
   const hours = (showSeed ? SEED_MACHINE_HOURS : 0) + sum((j) => (j.inputKg / 100) * (MODES[j.mode].minutesPer100kg / 60), jobs.filter((j) => !j.seed));
   const due = hours >= SERVICE_HOURS * 0.9;
 
-  const byMode = Object.values(MODES).map((m) => ({ label: m.th, value: sum((j) => j.outputKg, jobs.filter((j) => j.mode === m.key)), color: m.color }));
+  const byMode = Object.values(MODES).map((m) => ({ label: `${m.code} ${m.th}`, value: sum((j) => j.outputKg, jobs.filter((j) => j.mode === m.key)), color: m.color }));
   const villages = [...new Set(jobs.map((j) => j.village))]
     .map((v) => ({ label: v, value: sum((j) => j.savedKg, jobs.filter((j) => j.village === v)) }))
     .sort((a, b) => b.value - a.value)
@@ -107,7 +107,7 @@ export default function Dashboard() {
           <Stat label="เศษพืชที่ไม่ถูกเผา" value={kg(savedKg)} sub={`${jobs.length} ครั้งที่แปรรูป`} />
           <Stat label="ลดฝุ่น PM2.5 (ประมาณ)" value={`${(sum((j) => j.pm25g) / 1000).toFixed(1)} กก.`} sub="ค่าประมาณ ต้องอ้างอิงงานวิจัย" />
           <Stat label="รายได้ที่จ่ายให้เกษตรกร" value={thb(paid)} sub={`${farmers} ครัวเรือน`} />
-          <Stat label="ผลผลิตรวม" value={kg(sum((j) => j.outputKg))} sub="สับ + อัดเม็ด + อัดแท่ง" />
+          <Stat label="รายได้คนขับในชุมชน" value={thb(sum((j) => j.driverEarn || 0))} sub={`${jobs.filter((j) => j.pickupFee).length} เที่ยวรับของถึงไร่`} />
         </div>
 
         <div className="grid2">
@@ -142,7 +142,7 @@ export default function Dashboard() {
               <ul className="list">
                 {queue.map((l) => (
                   <li key={l.id}>
-                    <b>{new Date(l.slot).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</b> {l.id} · {l.name} · {RESIDUES[l.residue]} {kg(l.estKg)}
+                    <b>{new Date(l.slot).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</b> {l.id} · {l.name} · {residueName(l.residue)} {kg(l.estKg)} {l.delivery === 'pickup' && '🛻'}
                   </li>
                 ))}
               </ul>
@@ -178,7 +178,7 @@ export default function Dashboard() {
                       <small>{j.village}</small>
                     </td>
                     <td>
-                      {MODES[j.mode].th}
+                      {MODES[j.mode].code} {MODES[j.mode].th}
                       {j.pelletType && <small> · {PELLET_TYPES[j.pelletType].split(' ')[0]}</small>}
                     </td>
                     <td>

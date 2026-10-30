@@ -6,4 +6,5 @@ mkdir -p ../web/public/model ../web/public/img
 cp output/rai_mai_phao.glb ../web/public/model/
 for m in chop pellet briquette; do cp "output/receipt-$m.jpg" "../web/public/img/receipt-$m.jpg"; done
 cp output/render_front.png ../web/public/img/render-front.png
+cp output/render_hero.png ../web/public/img/render-hero.png
 echo "copied assets to web/public"

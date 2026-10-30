@@ -5,7 +5,7 @@ import { MODES, PM25_G_PER_KG } from '../../shared/rules.js';
 const ModelViewer = lazy(() => import('../components/ModelViewer.jsx'));
 
 const STEPS = [
-  ['📲', 'แจ้งเศษพืชผ่าน LINE', 'เลือกชนิด น้ำหนัก และเวลานัด ระบบส่ง QR ของล็อตเข้าแชต'],
+  ['📲', 'แจ้งขายผ่าน LINE', 'ดูราคา เลือกนำมาเอง หรือเรียกรถคนในพื้นที่ไปรับถึงไร่ (แบบ Grab) ระบบส่ง QR เข้าแชต'],
   ['🔍', 'สแกน QR ที่ตู้', 'ระบบดึงน้ำหนักที่ชั่งตอนรับของ วัดความชื้น และถ่ายรูปเป็นหลักฐาน'],
   ['⚙️', 'เลือกโหมดแปรรูป', 'สับ / อัดเม็ด / อัดแท่ง หรือระบบเลือกให้ตามคำสั่งซื้อ'],
   ['🧾', 'ใบรับของเข้า LINE', 'น้ำหนักก่อน-หลัง ยอดเงิน และปริมาณที่ช่วยลดการเผา'],
@@ -31,8 +31,11 @@ export default function Home() {
               <Link to="/liff" className="btn primary">
                 ลองแจ้งเศษพืช
               </Link>
-              <Link to="/dashboard" className="btn">
-                ดู Dashboard ผลกระทบ
+              <Link to="/prices" className="btn">
+                ราคารับซื้อ
+              </Link>
+              <Link to="/driver" className="btn">
+                สมัครขับรถรับของ
               </Link>
             </div>
           </div>
@@ -42,12 +45,21 @@ export default function Home() {
         </section>
 
         <section>
-          <h2>3 โหมดในตู้เดียว</h2>
+          <h2>เศษพืช 4 ชนิด → 3 โหมด → สินค้า 6 แบบ</h2>
           <div className="grid3">
             {Object.values(MODES).map((m) => (
               <div className="card mode" key={m.key} style={{ borderTopColor: m.color }}>
-                <h3>{m.th}</h3>
-                <p>{m.product}</p>
+                <h3>
+                  <span className="code" style={{ background: m.color }}>
+                    {m.code}
+                  </span>{' '}
+                  {m.th}
+                </h3>
+                <ul className="tight">
+                  {m.products.map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
                 <small>ได้ผลผลิตประมาณ {Math.round(m.yield * 100)}% ของน้ำหนักวัตถุดิบ*</small>
               </div>
             ))}
