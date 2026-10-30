@@ -164,3 +164,5 @@ tr.seed td { color: #7a857d; }
 .job .row { margin-top: 8px; }
 .k-code { font-style: normal; background: #ffffffcc; color: var(--ink); border-radius: 10px; padding: 0 14px; font-size: 1.6rem; font-weight: 700; }
 .nav nav { flex-wrap: wrap; }
+.demo-notice { background: #fff8e6; border-color: #f1d9ad; }
+.demo-notice p { margin: 6px 0 10px; word-break: break-word; }

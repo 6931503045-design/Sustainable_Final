@@ -42,7 +42,7 @@ export function Nav() {
       <nav>
         <Link to="/prices">ราคา</Link>
         <Link to="/liff">เกษตรกร</Link>
-        <Link to="/driver">คนขับ</Link>
+        <Link to="/liff/driver">คนขับ</Link>
         <Link to="/kiosk">หน้าจอตู้</Link>
         <Link to="/dashboard">Dashboard</Link>
       </nav>

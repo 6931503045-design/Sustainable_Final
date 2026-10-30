@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, Nav } from '../App.jsx';
 import QR from '../components/QR.jsx';
 import PriceBoard from '../components/PriceBoard.jsx';
+import DemoNotice from '../components/DemoNotice.jsx';
 import { MACHINE, MODES, PICKUP, PURPOSES, RESIDUES, distanceKm, modeLabel, residueName, settle } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
 import { lineSession } from '../lib/line.js';
@@ -341,9 +342,9 @@ export default function Farmer() {
           {session.profile.pictureUrl && <img src={session.profile.pictureUrl} alt="" />}
           <div>
             สวัสดี <b>{session.profile.displayName}</b>
-            {session.mode === 'demo' && <div className="tag warn">โหมดทดลอง (ไม่ได้เปิดผ่าน LINE จึงไม่ส่งข้อความเข้าแชต)</div>}
           </div>
         </div>
+        <DemoNotice session={session} />
         {msg && <p className="card">{msg}</p>}
         {tab === 'price' && !done ? (
           <>

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Link, Nav } from '../App.jsx';
 import { MODES, PM25_G_PER_KG } from '../../shared/rules.js';
+import { liffLink } from '../lib/line.js';
 
 const ModelViewer = lazy(() => import('../components/ModelViewer.jsx'));
 
@@ -28,15 +29,21 @@ export default function Home() {
               ตู้แปรรูปเศษวัสดุเกษตรอัจฉริยะ 3 in 1 สับ อัดเม็ด อัดแท่ง ในตู้เดียว ทุกครั้งที่ใช้ ระบบชั่ง ถ่ายรูป และส่งใบรับของเข้า LINE ของเกษตรกรอัตโนมัติ
             </p>
             <div className="cta">
-              <Link to="/liff" className="btn primary">
-                ลองแจ้งเศษพืช
-              </Link>
+              {liffLink() ? (
+                <a href={liffLink()} className="btn primary">
+                  เปิดใน LINE: แจ้งขาย / เรียกรถ
+                </a>
+              ) : (
+                <Link to="/liff" className="btn primary">
+                  ลองแจ้งเศษพืช
+                </Link>
+              )}
               <Link to="/prices" className="btn">
                 ราคารับซื้อ
               </Link>
-              <Link to="/driver" className="btn">
+              <a href={liffLink('/driver') || '/liff/driver'} className="btn">
                 สมัครขับรถรับของ
-              </Link>
+              </a>
             </div>
           </div>
           <Suspense fallback={<div className="viewer skeleton">กำลังโหลดโมเดล 3D…</div>}>
