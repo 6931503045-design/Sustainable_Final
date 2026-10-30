@@ -398,6 +398,19 @@ for z in (0.40, 1.30):
 decal('Door_Label', M_DOORLBL, 0.42, 0.126, (0, FRONT - 0.001, 0.62), 'front', F)
 box('Fascia_Trays', (W, T, 0.06), (0, yf, 0.27), M_DARK, F)
 
+# วัสดุแยกเฉพาะผนังตู้ เพื่อให้หน้าเว็บค่อย ๆ ทำให้โปร่งใส (X-ray) ได้โดยไม่กระทบชิ้นส่วนภายใน
+M_SHELL = mat('ShellGreen', '#2f6b3a', rough=0.45)
+M_DOOR = mat('DoorWhite', '#e8ebe4', rough=0.5)
+M_PANEL_DARK = mat('PanelDark', '#23272a', rough=0.6)
+for o in list(S.objects) + list(F.objects):
+    n = o.name
+    if n.startswith(('Panel_', 'Top_')) or n == 'ControlPanel':
+        o.data.materials[0] = M_SHELL
+    elif n in ('Door_Lower', 'Door_Upper', 'Door_Left', 'Door_Right'):
+        o.data.materials[0] = M_DOOR
+    elif n in ('Frame_T', 'Frame_B', 'Frame_L', 'Frame_R', 'Fascia_Trays'):
+        o.data.materials[0] = M_PANEL_DARK
+
 # ================================================================ 3. หน้าจอ/สแกน/กล้อง/ปุ่มฉุกเฉิน (Controls)
 K = C['Controls']
 decal('BrandPlate', M_BRAND, 0.50, 0.125, (-0.15, FRONT - 0.001, 1.715), 'front', K)

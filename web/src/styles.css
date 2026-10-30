@@ -51,7 +51,10 @@ section { margin: 28px 0; }
 .cta { display: flex; gap: 10px; flex-wrap: wrap; }
 .viewer { position: relative; height: min(70vh, 560px); background: radial-gradient(circle at 50% 40%, #fff, #e9ece4); border-radius: 20px; overflow: hidden; }
 .viewer.skeleton { display: grid; place-items: center; color: var(--muted); }
-.explode { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; gap: 8px; align-items: center; background: #ffffffd9; padding: 8px 12px; border-radius: 12px; font-size: .85rem; }
+.viewer-controls { position: absolute; left: 12px; right: 12px; bottom: 12px; display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: center; background: #ffffffe0; padding: 8px 10px; border-radius: 12px; }
+.viewer-controls .xray-btn { grid-row: span 2; padding: 10px 12px; font-size: .9rem; white-space: nowrap; }
+.explode { display: flex; gap: 8px; align-items: center; font-size: .85rem; min-width: 0; }
+.explode span { white-space: nowrap; }
 .explode input { flex: 1; accent-color: var(--green); }
 
 .grid2, .grid3, .grid4 { display: grid; gap: 14px; }
@@ -164,3 +167,5 @@ tr.seed td { color: #7a857d; }
 .job .row { margin-top: 8px; }
 .k-code { font-style: normal; background: #ffffffcc; color: var(--ink); border-radius: 10px; padding: 0 14px; font-size: 1.6rem; font-weight: 700; }
 .nav nav { flex-wrap: wrap; }
+.demo-notice { background: #fff8e6; border-color: #f1d9ad; }
+.demo-notice p { margin: 6px 0 10px; word-break: break-word; }

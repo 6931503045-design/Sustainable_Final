@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Nav } from '../App.jsx';
 import QR from '../components/QR.jsx';
+import DemoNotice from '../components/DemoNotice.jsx';
 import { MACHINE, VEHICLES, residueName } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
 import { lineSession } from '../lib/line.js';
@@ -135,9 +136,9 @@ export default function Driver() {
                 {me.driver.vehicleTh} {me.driver.plate} · รายได้สะสม <b>{thb(me.earned)}</b>
               </div>
             )}
-            {session.mode === 'demo' && <div className="tag warn">โหมดทดลอง</div>}
           </div>
         </div>
+        <DemoNotice session={session} path="/driver" />
         {msg && <p className="card error">{msg}</p>}
         {!token ? (
           <Register session={session} onDone={() => setToken(local.get('driverToken'))} />
