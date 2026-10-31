@@ -4,18 +4,19 @@ import { Link, Nav } from '../App.jsx';
 import QR from '../components/QR.jsx';
 import PriceBoard from '../components/PriceBoard.jsx';
 import DemoNotice from '../components/DemoNotice.jsx';
-import { MACHINE, MODES, PICKUP, PURPOSES, RESIDUES, distanceKm, modeLabel, residueName, settle } from '../../shared/rules.js';
+import { MACHINE, MODES, PICKUP, PURPOSES, PURPOSES_EN, RESIDUES, distanceKm, settle } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
+import { LangToggle, useT } from '../lib/i18n.jsx';
 import { lineSession } from '../lib/line.js';
 
 export const CONSENT_VERSION = '2026-11-01';
 
 const STATUS = {
-  open: '🔎 กำลังหาคนขับ',
-  accepted: '🛻 คนขับรับงานแล้ว กำลังไป',
-  picked: '📦 รับของแล้ว กำลังไปที่ตู้',
-  done: '✅ ชั่งและจ่ายเงินแล้ว',
-  cancelled: 'ยกเลิกรถ (นำมาเองแล้ว)',
+  open: ['🔎 กำลังหาคนขับ', '🔎 Finding a driver'],
+  accepted: ['🛻 คนขับรับงานแล้ว กำลังไป', '🛻 Driver accepted, on the way'],
+  picked: ['📦 รับของแล้ว กำลังไปที่ตู้', '📦 Picked up, heading to the machine'],
+  done: ['✅ ชั่งและจ่ายเงินแล้ว', '✅ Weighed and paid'],
+  cancelled: ['ยกเลิกรถ (นำมาเองแล้ว)', 'Pickup cancelled (brought in person)'],
 };
 
 function slots() {
@@ -30,56 +31,63 @@ function slots() {
 }
 
 function Consent({ onAccept }) {
+  const t = useT();
   const [ok, setOk] = useState(false);
   return (
     <div className="card">
-      <h2>ขอความยินยอมเก็บข้อมูลส่วนบุคคล</h2>
-      <p>เพื่อซื้อขายเศษพืชกับ "ไร่ไม่เผา" เราขอเก็บข้อมูลต่อไปนี้</p>
+      <h2>{t('ขอความยินยอมเก็บข้อมูลส่วนบุคคล', 'Consent to collect personal data')}</h2>
+      <p>{t('เพื่อซื้อขายเศษพืชกับ "ไร่ไม่เผา" เราขอเก็บข้อมูลต่อไปนี้', 'To buy your crop residue, "Rai Mai Phao" needs the following data:')}</p>
       <ul>
-        <li>ชื่อที่แสดงใน LINE และ LINE user ID: ยืนยันตัวตน ส่ง QR และใบรับของเข้าแชต</li>
-        <li>หมู่บ้าน ชนิดและน้ำหนักเศษพืช เวลานัด: จัดคิวและคำนวณยอดเงิน</li>
+        <li>{t('ชื่อที่แสดงใน LINE และ LINE user ID: ยืนยันตัวตน ส่ง QR และใบรับของเข้าแชต', 'LINE display name and user ID: to identify you and send the QR and receipt to your chat')}</li>
+        <li>{t('หมู่บ้าน ชนิดและน้ำหนักเศษพืช เวลานัด: จัดคิวและคำนวณยอดเงิน', 'Village, residue type/weight and booking time: to schedule and calculate payment')}</li>
         <li>
-          <b>ถ้าเรียกรถไปรับ:</b> ตำแหน่งกองเศษพืชและเบอร์โทร โดยจะเปิดเผยให้<b>เฉพาะคนขับที่รับงานของคุณ</b>เท่านั้น
+          <b>{t('ถ้าเรียกรถไปรับ:', 'If you book a pickup:')}</b>{' '}
+          {t('ตำแหน่งกองเศษพืชและเบอร์โทร โดยจะเปิดเผยให้เฉพาะคนขับที่รับงานของคุณเท่านั้น', 'the pile location and your phone number, shown only to the driver who accepts your job')}
         </li>
-        <li>รูปถ่ายวัตถุดิบและสินค้าที่ตู้: หลักฐานการซื้อขาย</li>
+        <li>{t('รูปถ่ายวัตถุดิบและสินค้าที่ตู้: หลักฐานการซื้อขาย', 'Photos of input and output at the machine: proof of the transaction')}</li>
       </ul>
       <p>
-        คุณขอดู แก้ไข ลบข้อมูล หรือถอนความยินยอมได้ทุกเมื่อที่แท็บ "สิทธิ์" <Link to="/privacy">อ่านนโยบายฉบับเต็ม</Link>
+        {t('คุณขอดู แก้ไข ลบข้อมูล หรือถอนความยินยอมได้ทุกเมื่อที่แท็บ "สิทธิ์"', 'You can view, correct or delete your data, or withdraw consent, any time in the "Rights" tab.')}{' '}
+        <Link to="/privacy">{t('อ่านนโยบายฉบับเต็ม', 'Full privacy policy')}</Link>
       </p>
       <label className="check">
-        <input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} /> ฉันอ่านและยินยอมให้เก็บข้อมูลตามวัตถุประสงค์ข้างต้น
+        <input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} /> {t('ฉันอ่านและยินยอมให้เก็บข้อมูลตามวัตถุประสงค์ข้างต้น', 'I have read this and consent to the purposes above')}
       </label>
       <button className="btn primary block" disabled={!ok} onClick={onAccept}>
-        ยินยอมและเริ่มใช้งาน
+        {t('ยินยอมและเริ่มใช้งาน', 'Agree and start')}
       </button>
     </div>
   );
 }
 
 function Quote({ q, pickup, km }) {
+  const t = useT();
   if (!q) return null;
   return (
     <div className="quote">
       <div className="row between">
-        <span>{q.gross >= 0 ? 'ค่าเศษพืช (ราคาเต็ม)' : 'ค่าบริการแปรรูป'}</span>
+        <span>{q.gross >= 0 ? t('ค่าเศษพืช (ราคาเต็ม)', 'Residue value (full price)') : t('ค่าบริการแปรรูป', 'Processing fee')}</span>
         <b>{thb(Math.abs(q.gross))}</b>
       </div>
       {pickup && (
         <div className="row between">
-          <span>ค่ารถรับถึงที่ ({km} กม.)</span>
+          <span>
+            {t('ค่ารถรับถึงที่', 'Pickup fee')} ({km} {t('กม.', 'km')})
+          </span>
           <b>− {thb(q.pickupFee)}</b>
         </div>
       )}
       <div className="row between total">
-        <span>{q.amount >= 0 ? 'คาดว่าจะได้รับ' : 'คาดว่าต้องจ่าย'}</span>
+        <span>{q.amount >= 0 ? t('คาดว่าจะได้รับ', 'Estimated payout') : t('คาดว่าต้องจ่าย', 'Estimated cost')}</span>
         <b>{thb(Math.abs(q.amount))}</b>
       </div>
-      <small className="hint">ยอดจริงคิดจากน้ำหนักที่ชั่งและความชื้นที่ตู้</small>
+      <small className="hint">{t('ยอดจริงคิดจากน้ำหนักที่ชั่งและความชื้นที่ตู้', 'Final amount uses the weight and moisture measured at the machine')}</small>
     </div>
   );
 }
 
 function NewLot({ session, onCreated }) {
+  const t = useT();
   const [f, setF] = useState({
     residue: 'corn',
     estKg: '',
@@ -101,11 +109,12 @@ function NewLot({ session, onCreated }) {
   const km = f.loc ? distanceKm(f.loc) : null;
   const kgNum = Number(f.estKg);
   const quote = kgNum > 0 ? settle({ residue: f.residue, mode: f.wantMode, purpose: f.purpose, inputKg: kgNum, pickupKm: pickup && km != null ? km : null }) : null;
+  const purposes = t.lang === 'en' ? PURPOSES_EN : PURPOSES;
 
   function locate(demo = false) {
     setErr('');
     if (demo) return setF({ ...f, loc: { lat: MACHINE.lat + 0.03, lng: MACHINE.lng - 0.02 } }); // จุดทดลองห่างตู้ ~5 กม.
-    if (!navigator.geolocation) return setErr('อุปกรณ์นี้แชร์ตำแหน่งไม่ได้');
+    if (!navigator.geolocation) return setErr(t('อุปกรณ์นี้แชร์ตำแหน่งไม่ได้', 'This device cannot share its location'));
     setLocBusy(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
@@ -113,7 +122,7 @@ function NewLot({ session, onCreated }) {
         setLocBusy(false);
       },
       () => {
-        setErr('ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง (หรือใช้ปุ่ม "ตำแหน่งทดลอง")');
+        setErr(t('ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง (หรือใช้ปุ่ม "ตำแหน่งทดลอง")', 'Location permission denied (or use "Demo location")'));
         setLocBusy(false);
       },
       { enableHighAccuracy: true, timeout: 10000 },
@@ -123,8 +132,8 @@ function NewLot({ session, onCreated }) {
   async function submit(e) {
     e.preventDefault();
     setErr('');
-    if (!f.slot) return setErr(pickup ? 'กรุณาเลือกวันเวลาให้ไปรับ' : 'กรุณาเลือกเวลานัด');
-    if (pickup && !f.loc) return setErr('กรุณาแชร์ตำแหน่งกองเศษพืช');
+    if (!f.slot) return setErr(pickup ? t('กรุณาเลือกวันเวลาให้ไปรับ', 'Please choose a pickup time') : t('กรุณาเลือกเวลานัด', 'Please choose a time'));
+    if (pickup && !f.loc) return setErr(t('กรุณาแชร์ตำแหน่งกองเศษพืช', 'Please share the pile location'));
     setBusy(true);
     try {
       const out = await api('lots', {
@@ -143,28 +152,28 @@ function NewLot({ session, onCreated }) {
 
   return (
     <form className="card form" onSubmit={submit}>
-      <h2>แจ้งขายเศษพืช</h2>
+      <h2>{t('แจ้งขายเศษพืช', 'Sell crop residue')}</h2>
       <label>
-        ชนิดเศษพืช
+        {t('ชนิดเศษพืช', 'Residue type')}
         <select value={f.residue} onChange={set('residue')}>
           {Object.entries(RESIDUES).map(([k, v]) => (
             <option key={k} value={k}>
-              {v.th} — {v.buy.toFixed(2)} ฿/กก.
+              {t.pick(v)} — {v.buy.toFixed(2)} ฿/{t('กก.', 'kg')}
             </option>
           ))}
         </select>
       </label>
       <label>
-        น้ำหนักโดยประมาณ (กก.)
-        <input type="number" inputMode="decimal" min="1" max="5000" required value={f.estKg} onChange={set('estKg')} placeholder="เช่น 120" />
+        {t('น้ำหนักโดยประมาณ (กก.)', 'Approximate weight (kg)')}
+        <input type="number" inputMode="decimal" min="1" max="5000" required value={f.estKg} onChange={set('estKg')} placeholder={t('เช่น 120', 'e.g. 120')} />
       </label>
       <label>
-        หมู่บ้าน
-        <input required value={f.village} onChange={set('village')} placeholder="เช่น บ้านห้วยไคร้" />
+        {t('หมู่บ้าน', 'Village')}
+        <input required value={f.village} onChange={set('village')} placeholder={t('เช่น บ้านห้วยไคร้', 'e.g. Ban Huai Khrai')} />
       </label>
       <fieldset>
-        <legend>ต้องการ</legend>
-        {Object.entries(PURPOSES).map(([k, v]) => (
+        <legend>{t('ต้องการ', 'I want to')}</legend>
+        {Object.entries(purposes).map(([k, v]) => (
           <label className="radio" key={k}>
             <input type="radio" name="purpose" value={k} checked={f.purpose === k} onChange={set('purpose')} /> {v}
           </label>
@@ -172,11 +181,11 @@ function NewLot({ session, onCreated }) {
       </fieldset>
       {f.purpose === 'self' && (
         <label>
-          โหมดที่ต้องการ
+          {t('โหมดที่ต้องการ', 'Mode')}
           <select value={f.wantMode} onChange={set('wantMode')}>
             {Object.values(MODES).map((m) => (
               <option key={m.key} value={m.key}>
-                {modeLabel(m.key)} ({m.products.join(' / ')})
+                {m.code} · {t.pick(m)} ({t.pick(m, 'products').join(' / ')})
               </option>
             ))}
           </select>
@@ -184,15 +193,15 @@ function NewLot({ session, onCreated }) {
       )}
 
       <fieldset>
-        <legend>ส่งเศษพืชอย่างไร</legend>
+        <legend>{t('ส่งเศษพืชอย่างไร', 'Delivery')}</legend>
         <div className="choice">
           <button type="button" className={!pickup ? 'on' : ''} onClick={() => setF({ ...f, delivery: 'self' })}>
-            🚜 นำมาเองที่ตู้
-            <small>{MACHINE.th}</small>
+            🚜 {t('นำมาเองที่ตู้', 'Bring it myself')}
+            <small>{t.pick(MACHINE)}</small>
           </button>
           <button type="button" className={pickup ? 'on' : ''} onClick={() => setF({ ...f, delivery: 'pickup' })}>
-            🛻 เรียกรถไปรับ
-            <small>คนในพื้นที่ขับไปรับถึงไร่</small>
+            🛻 {t('เรียกรถไปรับ', 'Book a pickup')}
+            <small>{t('คนในพื้นที่ขับไปรับถึงไร่', 'A local driver collects from your farm')}</small>
           </button>
         </div>
       </fieldset>
@@ -201,33 +210,34 @@ function NewLot({ session, onCreated }) {
         <div className="pickup-box">
           <div className="row">
             <button type="button" className="btn" onClick={() => locate(false)} disabled={locBusy}>
-              📍 {locBusy ? 'กำลังหาตำแหน่ง…' : f.loc ? 'แชร์ตำแหน่งใหม่' : 'แชร์ตำแหน่งกองเศษพืช'}
+              📍 {locBusy ? t('กำลังหาตำแหน่ง…', 'Locating…') : f.loc ? t('แชร์ตำแหน่งใหม่', 'Update location') : t('แชร์ตำแหน่งกองเศษพืช', 'Share pile location')}
             </button>
             <button type="button" className="btn ghost-sm" onClick={() => locate(true)}>
-              ตำแหน่งทดลอง
+              {t('ตำแหน่งทดลอง', 'Demo location')}
             </button>
           </div>
           {f.loc && (
             <p className={km > PICKUP.maxKm ? 'error' : 'hint'}>
-              ห่างตู้ประมาณ {km} กม. {km > PICKUP.maxKm && `(เกิน ${PICKUP.maxKm} กม. ยังไม่มีบริการ)`}{' '}
+              {t(`ห่างตู้ประมาณ ${km} กม.`, `About ${km} km from the machine`)}{' '}
+              {km > PICKUP.maxKm && t(`(เกิน ${PICKUP.maxKm} กม. ยังไม่มีบริการ)`, `(beyond ${PICKUP.maxKm} km — not served yet)`)}{' '}
               <a href={`https://www.google.com/maps/search/?api=1&query=${f.loc.lat},${f.loc.lng}`} target="_blank" rel="noreferrer">
-                ดูบนแผนที่
+                {t('ดูบนแผนที่', 'View map')}
               </a>
             </p>
           )}
           <label>
-            จุดสังเกต (ให้คนขับหาเจอ)
-            <input value={f.landmark} onChange={set('landmark')} placeholder="เช่น ไร่ข้าวโพดหลังวัด ทางเข้าเป็นดิน" />
+            {t('จุดสังเกต (ให้คนขับหาเจอ)', 'Landmark (to help the driver)')}
+            <input value={f.landmark} onChange={set('landmark')} placeholder={t('เช่น ไร่ข้าวโพดหลังวัด ทางเข้าเป็นดิน', 'e.g. corn field behind the temple, dirt road')} />
           </label>
           <label>
-            เบอร์โทร (เปิดให้เฉพาะคนขับที่รับงาน)
+            {t('เบอร์โทร (เปิดให้เฉพาะคนขับที่รับงาน)', 'Phone (shown only to your driver)')}
             <input type="tel" inputMode="tel" value={f.phone} onChange={set('phone')} placeholder="0812345678" />
           </label>
         </div>
       )}
 
       <fieldset>
-        <legend>{pickup ? 'วันเวลาที่สะดวกให้ไปรับ' : 'เวลานัดนำเศษพืชมาที่ตู้'}</legend>
+        <legend>{pickup ? t('วันเวลาที่สะดวกให้ไปรับ', 'Preferred pickup time') : t('เวลานัดนำเศษพืชมาที่ตู้', 'Drop-off time at the machine')}</legend>
         <div className="slots">
           {options.map((s) => (
             <button type="button" key={s} className={f.slot === s ? 'slot on' : 'slot'} onClick={() => setF({ ...f, slot: s })}>
@@ -238,16 +248,17 @@ function NewLot({ session, onCreated }) {
       </fieldset>
 
       <Quote q={quote} pickup={pickup && km != null} km={km} />
-      <p className="hint">⚠️ เศษพืชต้องแห้ง ความชื้นไม่เกิน 20% (15–20% ลดราคา 10%)</p>
+      <p className="hint">{t('⚠️ เศษพืชต้องแห้ง ความชื้นไม่เกิน 20% (15–20% ลดราคา 10%)', '⚠️ Residue must be dry: max 20% moisture (15–20% gets −10%)')}</p>
       {err && <p className="error">{err}</p>}
       <button className="btn primary block" disabled={busy}>
-        {busy ? 'กำลังส่ง…' : pickup ? 'ยืนยันและเรียกรถ' : 'ยืนยันและรับ QR'}
+        {busy ? t('กำลังส่ง…', 'Sending…') : pickup ? t('ยืนยันและเรียกรถ', 'Confirm and book pickup') : t('ยืนยันและรับ QR', 'Confirm and get QR')}
       </button>
     </form>
   );
 }
 
 function LotCard({ item, open }) {
+  const t = useT();
   const { lot, token } = item;
   const [p, setP] = useState(null);
   useEffect(() => {
@@ -255,29 +266,31 @@ function LotCard({ item, open }) {
     let alive = true;
     const load = () => api(`pickups?lot=${lot.id}`).then((r) => alive && setP(r.pickup)).catch(() => {});
     load();
-    const t = setInterval(load, 8000);
+    const timer = setInterval(load, 8000);
     return () => {
       alive = false;
-      clearInterval(t);
+      clearInterval(timer);
     };
   }, [lot.id, lot.delivery]);
   return (
     <div className="card lot">
       <div className="row between">
-        <b>ล็อต {lot.id}</b>
-        <span className="tag">{residueName(lot.residue)}</span>
+        <b>
+          {t('ล็อต', 'Lot')} {lot.id}
+        </b>
+        <span className="tag">{t.pick(RESIDUES[lot.residue])}</span>
       </div>
       <p>
-        {kg(lot.estKg)} · {PURPOSES[lot.purpose]}
+        {kg(lot.estKg)} · {(t.lang === 'en' ? PURPOSES_EN : PURPOSES)[lot.purpose]}
         <br />
-        {lot.delivery === 'pickup' ? 'ให้ไปรับ' : 'นัด'} {lot.slot ? when(lot.slot) : '-'}
+        {lot.delivery === 'pickup' ? t('ให้ไปรับ', 'Pickup') : t('นัด', 'Drop-off')} {lot.slot ? when(lot.slot) : '-'}
       </p>
       {p && (
         <div className="status">
-          <b>{STATUS[p.status] || p.status}</b>
+          <b>{STATUS[p.status] ? t(...STATUS[p.status]) : p.status}</b>
           {p.driver && (
             <div>
-              คนขับ {p.driver.name} · {p.driver.vehicleTh} {p.driver.plate}
+              {t('คนขับ', 'Driver')} {p.driver.name} · {p.driver.vehicleTh} {p.driver.plate}
             </div>
           )}
         </div>
@@ -288,6 +301,7 @@ function LotCard({ item, open }) {
 }
 
 export default function Farmer() {
+  const t = useT();
   const [session, setSession] = useState(null);
   const [consent, setConsent] = useState(local.get('consent'));
   const [tab, setTab] = useState(new URLSearchParams(window.location.search).get('tab') || 'new'); // rich menu ส่ง ?tab= มาได้
@@ -313,26 +327,35 @@ export default function Farmer() {
   }
 
   async function erase() {
-    if (!window.confirm('ลบข้อมูลล็อตและประวัติทั้งหมดของคุณ และถอนความยินยอม?')) return;
+    if (!window.confirm(t('ลบข้อมูลล็อตและประวัติทั้งหมดของคุณ และถอนความยินยอม?', 'Delete all your lots and history and withdraw consent?'))) return;
     try {
       if (session.mode === 'line') await api('me', { method: 'DELETE', data: { idToken: session.idToken } });
       ['lots', 'consent', 'village', 'phone'].forEach(local.remove);
       setLots([]);
       setConsent(null);
-      setMsg('ลบข้อมูลเรียบร้อยแล้ว');
+      setMsg(t('ลบข้อมูลเรียบร้อยแล้ว', 'Your data has been deleted'));
     } catch (e) {
       setMsg(e.message);
     }
   }
 
-  if (!session) return <div className="center">กำลังเชื่อมต่อ LINE…</div>;
+  if (!session) return <div className="center">{t('กำลังเชื่อมต่อ LINE…', 'Connecting to LINE…')}</div>;
 
   const tabs = [
-    ['new', 'แจ้งขาย'],
-    ['price', 'ราคา'],
-    ['lots', `ล็อตของฉัน (${lots.length})`],
-    ['rights', 'สิทธิ์'],
+    ['new', t('แจ้งขาย', 'Sell')],
+    ['price', t('ราคา', 'Prices')],
+    ['lots', `${t('ล็อตของฉัน', 'My lots')} (${lots.length})`],
+    ['rights', t('สิทธิ์', 'Rights')],
   ];
+  const tabBar = (
+    <div className="tabs">
+      {tabs.map(([k, v]) => (
+        <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
+          {v}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <>
@@ -340,48 +363,49 @@ export default function Farmer() {
       <main className="wrap narrow">
         <div className="hello">
           {session.profile.pictureUrl && <img src={session.profile.pictureUrl} alt="" />}
-          <div>
-            สวัสดี <b>{session.profile.displayName}</b>
+          <div style={{ flex: 1 }}>
+            {t('สวัสดี', 'Hello')} <b>{session.profile.displayName}</b>
           </div>
+          {session.inClient && <LangToggle />}
         </div>
         <DemoNotice session={session} />
         {msg && <p className="card">{msg}</p>}
         {tab === 'price' && !done ? (
           <>
-            <div className="tabs">
-              {tabs.map(([k, v]) => (
-                <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
-                  {v}
-                </button>
-              ))}
-            </div>
+            {tabBar}
             <PriceBoard onSell={() => setTab('new')} />
           </>
         ) : !consent ? (
           <>
             <button className="btn block" onClick={() => setTab('price')}>
-              💰 ดูราคารับซื้อก่อน
+              💰 {t('ดูราคารับซื้อก่อน', 'See buy prices first')}
             </button>
             <br />
             <Consent onAccept={accept} />
           </>
         ) : done ? (
           <div className="card center-text">
-            <h2>✅ {done.lot.delivery === 'pickup' ? 'ส่งคำขอรถแล้ว' : 'ลงทะเบียนแล้ว'} · ล็อต {done.lot.id}</h2>
+            <h2>
+              ✅ {done.lot.delivery === 'pickup' ? t('ส่งคำขอรถแล้ว', 'Pickup requested') : t('ลงทะเบียนแล้ว', 'Registered')} · {t('ล็อต', 'Lot')} {done.lot.id}
+            </h2>
             <QR value={done.token} size={240} />
             <p>
               {done.lot.delivery === 'pickup'
-                ? 'ระบบแจ้งคนขับในพื้นที่แล้ว จะส่งข้อความเข้า LINE เมื่อมีคนรับงาน'
+                ? t('ระบบแจ้งคนขับในพื้นที่แล้ว จะส่งข้อความเข้า LINE เมื่อมีคนรับงาน', 'Local drivers have been notified. We’ll message you on LINE when one accepts.')
                 : done.pushed
-                  ? 'ส่ง QR เข้าแชต LINE ของคุณแล้ว นำไปสแกนที่ตู้ได้เลย'
-                  : 'แคปหน้าจอ QR นี้ไว้ แล้วนำไปสแกนที่ตู้'}
+                  ? t('ส่ง QR เข้าแชต LINE ของคุณแล้ว นำไปสแกนที่ตู้ได้เลย', 'The QR is in your LINE chat — scan it at the machine.')
+                  : t('แคปหน้าจอ QR นี้ไว้ แล้วนำไปสแกนที่ตู้', 'Screenshot this QR and scan it at the machine.')}
             </p>
             {done.quote && (
               <p>
-                {done.quote.amount >= 0 ? 'คาดว่าจะได้รับ' : 'คาดว่าต้องจ่าย'} <b>{thb(Math.abs(done.quote.amount))}</b>
+                {done.quote.amount >= 0 ? t('คาดว่าจะได้รับ', 'Estimated payout') : t('คาดว่าต้องจ่าย', 'Estimated cost')} <b>{thb(Math.abs(done.quote.amount))}</b>
               </p>
             )}
-            {done.pushError && <p className="error">ส่งเข้า LINE ไม่สำเร็จ: {done.pushError}</p>}
+            {done.pushError && (
+              <p className="error">
+                {t('ส่งเข้า LINE ไม่สำเร็จ', 'LINE delivery failed')}: {done.pushError}
+              </p>
+            )}
             <button
               className="btn block"
               onClick={() => {
@@ -389,33 +413,34 @@ export default function Farmer() {
                 setTab('lots');
               }}
             >
-              ดูสถานะ
+              {t('ดูสถานะ', 'View status')}
             </button>
           </div>
         ) : (
           <>
-            <div className="tabs">
-              {tabs.map(([k, v]) => (
-                <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
-                  {v}
-                </button>
-              ))}
-            </div>
+            {tabBar}
             {tab === 'new' && <NewLot session={session} onCreated={created} />}
-            {tab === 'lots' && (lots.length ? lots.map((it, i) => <LotCard key={it.lot.id} item={it} open={i === 0} />) : <p className="card">ยังไม่มีล็อต</p>)}
+            {tab === 'lots' && (lots.length ? lots.map((it, i) => <LotCard key={it.lot.id} item={it} open={i === 0} />) : <p className="card">{t('ยังไม่มีล็อต', 'No lots yet')}</p>)}
             {tab === 'rights' && (
               <div className="card">
-                <h2>สิทธิ์ของเจ้าของข้อมูล (PDPA)</h2>
-                <p>ยินยอมเมื่อ {when(consent.at)} (ฉบับ {consent.version})</p>
+                <h2>{t('สิทธิ์ของเจ้าของข้อมูล (PDPA)', 'Your data rights (PDPA)')}</h2>
+                <p>
+                  {t('ยินยอมเมื่อ', 'Consented on')} {when(consent.at)} ({t('ฉบับ', 'version')} {consent.version})
+                </p>
                 <ul>
-                  <li>ดูข้อมูลของฉัน: ล็อตทั้งหมดอยู่ในแท็บ "ล็อตของฉัน" และใบรับของอยู่ในแชต LINE</li>
-                  <li>ขอแก้ไขข้อมูล: ติดต่อเจ้าหน้าที่ผ่านแชต LINE</li>
-                  <li>ถอนความยินยอม / ลบข้อมูล: กดปุ่มด้านล่าง (ง่ายเท่ากับตอนให้ความยินยอม)</li>
+                  <li>{t('ดูข้อมูลของฉัน: ล็อตทั้งหมดอยู่ในแท็บ "ล็อตของฉัน" และใบรับของอยู่ในแชต LINE', 'Access: all lots are in "My lots"; receipts are in your LINE chat')}</li>
+                  <li>{t('ขอแก้ไขข้อมูล: ติดต่อเจ้าหน้าที่ผ่านแชต LINE', 'Correction: contact staff via the LINE chat')}</li>
+                  <li>{t('ถอนความยินยอม / ลบข้อมูล: กดปุ่มด้านล่าง (ง่ายเท่ากับตอนให้ความยินยอม)', 'Withdraw / erase: use the button below (as easy as giving consent)')}</li>
                 </ul>
                 <button className="btn danger block" onClick={erase}>
-                  ถอนความยินยอมและลบข้อมูลของฉัน
+                  {t('ถอนความยินยอมและลบข้อมูลของฉัน', 'Withdraw consent and delete my data')}
                 </button>
-                <p className="hint">ต้นแบบนี้ลบทุกอย่าง ส่วนระบบจริงอาจต้องเก็บรายการซื้อขายแบบไม่ระบุตัวตนไว้ตามกฎหมายบัญชี/ภาษี (ฐาน Legal Obligation)</p>
+                <p className="hint">
+                  {t(
+                    'ต้นแบบนี้ลบทุกอย่าง ส่วนระบบจริงอาจต้องเก็บรายการซื้อขายแบบไม่ระบุตัวตนไว้ตามกฎหมายบัญชี/ภาษี (ฐาน Legal Obligation)',
+                    'This prototype deletes everything; a production system may need to keep anonymised transactions for accounting/tax law (legal obligation basis).',
+                  )}
+                </p>
               </div>
             )}
           </>

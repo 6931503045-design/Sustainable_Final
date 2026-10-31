@@ -1,8 +1,9 @@
 // Dashboard ผลกระทบ: รวมข้อมูลจริงจาก API + งานในเครื่องนี้ + ข้อมูลจำลอง (เปิด/ปิดได้)
 import { useEffect, useMemo, useState } from 'react';
 import { Nav } from '../App.jsx';
-import { MODES, PELLET_TYPES, PURPOSES, SERVICE_HOURS, residueName } from '../../shared/rules.js';
+import { MODES, PELLET_TYPES, PELLET_TYPES_EN, PURPOSES, PURPOSES_EN, RESIDUES, SERVICE_HOURS } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
+import { useT } from '../lib/i18n.jsx';
 import { SEED_MACHINE_HOURS, seedJobs } from '../lib/seed.js';
 
 const SEED = seedJobs();
@@ -18,6 +19,7 @@ function Stat({ label, value, sub }) {
 }
 
 function Bars({ data, unit }) {
+  const t = useT();
   const max = Math.max(1, ...data.map((d) => d.value));
   return (
     <div className="bars">
@@ -28,7 +30,7 @@ function Bars({ data, unit }) {
             <i style={{ width: `${(d.value / max) * 100}%`, background: d.color || 'var(--green)' }} />
           </div>
           <b>
-            {Math.round(d.value).toLocaleString('th-TH')} {unit}
+            {Math.round(d.value).toLocaleString(t.locale)} {unit}
           </b>
         </div>
       ))}
@@ -37,6 +39,7 @@ function Bars({ data, unit }) {
 }
 
 export default function Dashboard() {
+  const t = useT();
   const [server, setServer] = useState({ jobs: [], lots: [], persistent: false });
   const [showSeed, setShowSeed] = useState(local.get('showSeed', true));
   const [note, setNote] = useState('');
@@ -45,10 +48,10 @@ export default function Dashboard() {
     let alive = true;
     const load = () => api('stats').then((s) => alive && setServer(s)).catch(() => {});
     load();
-    const t = setInterval(load, 5000);
+    const timer = setInterval(load, 5000);
     return () => {
       alive = false;
-      clearInterval(t);
+      clearInterval(timer);
     };
   }, []);
 
@@ -66,7 +69,7 @@ export default function Dashboard() {
   const hours = (showSeed ? SEED_MACHINE_HOURS : 0) + sum((j) => (j.inputKg / 100) * (MODES[j.mode].minutesPer100kg / 60), jobs.filter((j) => !j.seed));
   const due = hours >= SERVICE_HOURS * 0.9;
 
-  const byMode = Object.values(MODES).map((m) => ({ label: `${m.code} ${m.th}`, value: sum((j) => j.outputKg, jobs.filter((j) => j.mode === m.key)), color: m.color }));
+  const byMode = Object.values(MODES).map((m) => ({ label: `${m.code} ${t.pick(m)}`, value: sum((j) => j.outputKg, jobs.filter((j) => j.mode === m.key)), color: m.color }));
   const villages = [...new Set(jobs.map((j) => j.village))]
     .map((v) => ({ label: v, value: sum((j) => j.savedKg, jobs.filter((j) => j.village === v)) }))
     .sort((a, b) => b.value - a.value)
@@ -77,7 +80,7 @@ export default function Dashboard() {
   async function notifyTech() {
     try {
       await api('maintenance', { method: 'POST', data: { machineId: 'RMP-01', hours: Math.round(hours) } });
-      setNote('ส่งแจ้งเตือนเข้า LINE ช่างแล้ว ✓');
+      setNote(t('ส่งแจ้งเตือนเข้า LINE ช่างแล้ว ✓', 'Technician notified on LINE ✓'));
     } catch (e) {
       setNote(e.message);
     }
@@ -88,7 +91,7 @@ export default function Dashboard() {
       <Nav />
       <main className="wrap">
         <div className="row between">
-          <h1>Dashboard ผลกระทบ</h1>
+          <h1>{t('Dashboard ผลกระทบ', 'Impact dashboard')}</h1>
           <label className="check">
             <input
               type="checkbox"
@@ -98,73 +101,76 @@ export default function Dashboard() {
                 local.set('showSeed', e.target.checked);
               }}
             />{' '}
-            รวมข้อมูลจำลอง
+            {t('รวมข้อมูลจำลอง', 'Include sample data')}
           </label>
         </div>
-        {showSeed && <p className="tag warn">มีข้อมูลจำลองรวมอยู่ด้วย (ต้นแบบสำหรับนำเสนอ)</p>}
+        {showSeed && <p className="tag warn">{t('มีข้อมูลจำลองรวมอยู่ด้วย (ต้นแบบสำหรับนำเสนอ)', 'Includes sample data (presentation prototype)')}</p>}
 
         <div className="grid4">
-          <Stat label="เศษพืชที่ไม่ถูกเผา" value={kg(savedKg)} sub={`${jobs.length} ครั้งที่แปรรูป`} />
-          <Stat label="ลดฝุ่น PM2.5 (ประมาณ)" value={`${(sum((j) => j.pm25g) / 1000).toFixed(1)} กก.`} sub="ค่าประมาณ ต้องอ้างอิงงานวิจัย" />
-          <Stat label="รายได้ที่จ่ายให้เกษตรกร" value={thb(paid)} sub={`${farmers} ครัวเรือน`} />
-          <Stat label="รายได้คนขับในชุมชน" value={thb(sum((j) => j.driverEarn || 0))} sub={`${jobs.filter((j) => j.pickupFee).length} เที่ยวรับของถึงไร่`} />
+          <Stat label={t('เศษพืชที่ไม่ถูกเผา', 'Residue not burned')} value={kg(savedKg)} sub={t(`${jobs.length} ครั้งที่แปรรูป`, `${jobs.length} runs`)} />
+          <Stat label={t('ลดฝุ่น PM2.5 (ประมาณ)', 'PM2.5 avoided (est.)')} value={kg(sum((j) => j.pm25g) / 1000)} sub={t('ค่าประมาณ ต้องอ้างอิงงานวิจัย', 'Estimate — needs a cited source')} />
+          <Stat label={t('รายได้ที่จ่ายให้เกษตรกร', 'Paid to farmers')} value={thb(paid)} sub={t(`${farmers} ครัวเรือน`, `${farmers} households`)} />
+          <Stat label={t('รายได้คนขับในชุมชน', 'Earned by local drivers')} value={thb(sum((j) => j.driverEarn || 0))} sub={t(`${jobs.filter((j) => j.pickupFee).length} เที่ยวรับของถึงไร่`, `${jobs.filter((j) => j.pickupFee).length} farm pickups`)} />
         </div>
 
         <div className="grid2">
           <div className="card">
-            <h3>ผลผลิตแยกตามโหมด</h3>
-            <Bars data={byMode} unit="กก." />
+            <h3>{t('ผลผลิตแยกตามโหมด', 'Output by mode')}</h3>
+            <Bars data={byMode} unit={t('กก.', 'kg')} />
           </div>
           <div className="card">
-            <h3>หมู่บ้านที่ลดการเผามากที่สุด</h3>
-            <Bars data={villages} unit="กก." />
+            <h3>{t('หมู่บ้านที่ลดการเผามากที่สุด', 'Villages avoiding the most burning')}</h3>
+            <Bars data={villages} unit={t('กก.', 'kg')} />
           </div>
         </div>
 
         <div className="grid2">
           <div className="card">
-            <h3>สถานะตู้ RMP-01</h3>
+            <h3>{t('สถานะตู้', 'Machine status')} RMP-01</h3>
             <p>
-              ชั่วโมงทำงานตั้งแต่บำรุงรักษาล่าสุด <b>{hours.toFixed(1)}</b> / {SERVICE_HOURS} ชม.
+              {t('ชั่วโมงทำงานตั้งแต่บำรุงรักษาล่าสุด', 'Run hours since last service')} <b>{hours.toFixed(1)}</b> / {SERVICE_HOURS} {t('ชม.', 'h')}
             </p>
             <div className={`meter ${due ? 'due' : ''}`}>
               <i style={{ width: `${Math.min(100, (hours / SERVICE_HOURS) * 100)}%` }} />
             </div>
-            <p className="hint">{due ? '⚠️ ใกล้ถึงรอบตรวจใบมีดสับ / ลูกกลิ้ง / แม่พิมพ์ (สึกจากซิลิกาในเศษพืช)' : 'ปกติ'}</p>
+            <p className="hint">{due ? t('⚠️ ใกล้ถึงรอบตรวจใบมีดสับ / ลูกกลิ้ง / แม่พิมพ์ (สึกจากซิลิกาในเศษพืช)', '⚠️ Service due soon: hammers / rollers / dies (worn by silica in residue)') : t('ปกติ', 'OK')}</p>
             <button className="btn" onClick={notifyTech}>
-              🔧 แจ้งช่างผ่าน LINE
+              🔧 {t('แจ้งช่างผ่าน LINE', 'Notify technician on LINE')}
             </button>
             {note && <p className="hint">{note}</p>}
           </div>
           <div className="card">
-            <h3>คิววันนี้</h3>
+            <h3>{t('คิววันนี้', 'Today’s queue')}</h3>
             {queue.length ? (
               <ul className="list">
                 {queue.map((l) => (
                   <li key={l.id}>
-                    <b>{new Date(l.slot).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</b> {l.id} · {l.name} · {residueName(l.residue)} {kg(l.estKg)} {l.delivery === 'pickup' && '🛻'}
+                    <b>{new Date(l.slot).toLocaleTimeString(t.locale, { hour: '2-digit', minute: '2-digit' })}</b> {l.id} · {l.name} · {t.pick(RESIDUES[l.residue])} {kg(l.estKg)} {l.delivery === 'pickup' && '🛻'}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="hint">ยังไม่มีคิววันนี้{server.persistent ? '' : ' (ยังไม่ได้เชื่อมฐานข้อมูล คิวจะไม่แชร์ข้ามเครื่อง)'}</p>
+              <p className="hint">
+                {t('ยังไม่มีคิววันนี้', 'No bookings today')}
+                {server.persistent ? '' : t(' (ยังไม่ได้เชื่อมฐานข้อมูล คิวจะไม่แชร์ข้ามเครื่อง)', ' (database not connected — queue is not shared)')}
+              </p>
             )}
           </div>
         </div>
 
         <div className="card">
-          <h3>รายการแปรรูปล่าสุด</h3>
+          <h3>{t('รายการแปรรูปล่าสุด', 'Latest runs')}</h3>
           <div className="table">
             <table>
               <thead>
                 <tr>
-                  <th>เวลา</th>
-                  <th>ล็อต</th>
-                  <th>เกษตรกร</th>
-                  <th>โหมด</th>
-                  <th>ก่อน → หลัง</th>
-                  <th>ประเภท</th>
-                  <th>ยอดเงิน</th>
+                  <th>{t('เวลา', 'Time')}</th>
+                  <th>{t('ล็อต', 'Lot')}</th>
+                  <th>{t('เกษตรกร', 'Farmer')}</th>
+                  <th>{t('โหมด', 'Mode')}</th>
+                  <th>{t('ก่อน → หลัง', 'In → out')}</th>
+                  <th>{t('ประเภท', 'Type')}</th>
+                  <th>{t('ยอดเงิน', 'Amount')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -178,13 +184,13 @@ export default function Dashboard() {
                       <small>{j.village}</small>
                     </td>
                     <td>
-                      {MODES[j.mode].code} {MODES[j.mode].th}
-                      {j.pelletType && <small> · {PELLET_TYPES[j.pelletType].split(' ')[0]}</small>}
+                      {MODES[j.mode].code} {t.pick(MODES[j.mode])}
+                      {j.pelletType && <small> · {(t.lang === 'en' ? PELLET_TYPES_EN : PELLET_TYPES)[j.pelletType].split(' (')[0]}</small>}
                     </td>
                     <td>
                       {j.inputKg} → {j.outputKg}
                     </td>
-                    <td>{PURPOSES[j.purpose].split(' ')[0]}</td>
+                    <td>{t.lang === 'en' ? PURPOSES_EN[j.purpose].split(' ')[0] : PURPOSES[j.purpose].split(' ')[0]}</td>
                     <td className={j.amount >= 0 ? 'good' : ''}>{thb(j.amount)}</td>
                   </tr>
                 ))}

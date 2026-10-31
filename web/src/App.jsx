@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { LangToggle, useT } from './lib/i18n.jsx';
 
 const Home = lazy(() => import('./pages/Home.jsx'));
 const Farmer = lazy(() => import('./pages/Farmer.jsx'));
@@ -7,9 +8,10 @@ const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const Privacy = lazy(() => import('./pages/Privacy.jsx'));
 const Driver = lazy(() => import('./pages/Driver.jsx'));
 const Prices = lazy(() => import('./pages/Prices.jsx'));
+const Present = lazy(() => import('./pages/Present.jsx'));
 
 // LIFF เปิด liff.line.me/<id>/driver → <endpoint>/liff/driver
-const ROUTES = { '/': Home, '/liff': Farmer, '/liff/driver': Driver, '/driver': Driver, '/prices': Prices, '/kiosk': Kiosk, '/dashboard': Dashboard, '/privacy': Privacy };
+const ROUTES = { '/': Home, '/liff': Farmer, '/liff/driver': Driver, '/driver': Driver, '/prices': Prices, '/present': Present, '/kiosk': Kiosk, '/dashboard': Dashboard, '/privacy': Privacy };
 
 export function go(path) {
   window.history.pushState({}, '', path);
@@ -34,17 +36,20 @@ export function Link({ to, children, ...rest }) {
 }
 
 export function Nav() {
+  const t = useT();
   return (
     <header className="nav">
       <Link to="/" className="brand">
-        🌾 ไร่ไม่เผา
+        🌾 {t('ไร่ไม่เผา', 'Rai Mai Phao')}
       </Link>
       <nav>
-        <Link to="/prices">ราคา</Link>
-        <Link to="/liff">เกษตรกร</Link>
-        <Link to="/liff/driver">คนขับ</Link>
-        <Link to="/kiosk">หน้าจอตู้</Link>
+        <Link to="/present">{t('พรีเซนต์', 'Present')}</Link>
+        <Link to="/prices">{t('ราคา', 'Prices')}</Link>
+        <Link to="/liff">{t('เกษตรกร', 'Farmer')}</Link>
+        <Link to="/liff/driver">{t('คนขับ', 'Driver')}</Link>
+        <Link to="/kiosk">{t('หน้าจอตู้', 'Kiosk')}</Link>
         <Link to="/dashboard">Dashboard</Link>
+        <LangToggle dark />
       </nav>
     </header>
   );
@@ -59,7 +64,7 @@ export default function App() {
   }, []);
   const Page = ROUTES[path] || Home;
   return (
-    <Suspense fallback={<div className="center">กำลังโหลด…</div>}>
+    <Suspense fallback={<div className="center">…</div>}>
       <Page />
     </Suspense>
   );
