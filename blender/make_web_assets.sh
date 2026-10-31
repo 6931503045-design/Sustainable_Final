@@ -4,6 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p ../web/public/model ../web/public/img
 cp output/rai_mai_phao.glb ../web/public/model/
+mkdir -p ../web/src/data && cp output/hotspots.json ../web/src/data/hotspots.json
 for m in chop pellet briquette; do cp "output/receipt-$m.jpg" "../web/public/img/receipt-$m.jpg"; done
 cp output/render_front.png ../web/public/img/render-front.png
 cp output/render_hero.png ../web/public/img/render-hero.png

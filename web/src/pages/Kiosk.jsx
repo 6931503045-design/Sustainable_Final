@@ -1,19 +1,21 @@
 // หน้าจอสัมผัสหน้าตู้ (จำลองบนแท็บเล็ต): สแกน QR → วัดความชื้น → เลือกโหมด → แปรรูป → ชั่ง → ส่งใบรับของเข้า LINE
 import { useEffect, useRef, useState } from 'react';
-import { MODES, MOISTURE_MAX, PELLET_TYPES, needsFlush, residueName, round } from '../../shared/rules.js';
+import { MODES, MOISTURE_MAX, PELLET_TYPES, PELLET_TYPES_EN, RESIDUES, needsFlush, round } from '../../shared/rules.js';
+import { LangToggle, useT } from '../lib/i18n.jsx';
 import { api, kg, local, thb } from '../lib/client.js';
 
 const MACHINE_ID = 'RMP-01';
 // คำสั่งซื้อจำลองจากผู้รับซื้อ (ระบบจริงดึงจากฐานข้อมูลคำสั่งซื้อ)
 const ORDERS = [
-  { buyer: 'ฟาร์มเห็ดบ้านดู่', mode: 'chop' },
-  { buyer: 'สวนลำไยแม่สาย (วัสดุคลุมดิน)', mode: 'chop' },
-  { buyer: 'สหกรณ์โคนมแม่จัน', mode: 'pellet', pelletType: 'feed' },
-  { buyer: 'โรงอบลำไยเวียงชัย', mode: 'briquette' },
+  { buyer: 'ฟาร์มเห็ดบ้านดู่', buyer_en: 'Ban Du mushroom farm', mode: 'chop' },
+  { buyer: 'สวนลำไยแม่สาย (วัสดุคลุมดิน)', buyer_en: 'Mae Sai longan orchard (mulch)', mode: 'chop' },
+  { buyer: 'สหกรณ์โคนมแม่จัน', buyer_en: 'Mae Chan dairy co-op', mode: 'pellet', pelletType: 'feed' },
+  { buyer: 'โรงอบลำไยเวียงชัย', buyer_en: 'Wiang Chai longan dryer', mode: 'briquette' },
 ];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function Scanner({ onToken }) {
+  const t = useT();
   const cb = useRef(onToken);
   cb.current = onToken;
   const [err, setErr] = useState('');
@@ -29,7 +31,7 @@ function Scanner({ onToken }) {
           scanner.stop().catch(() => {});
           cb.current(text);
         })
-        .catch(() => setErr('เปิดกล้องไม่ได้ (ต้องอนุญาตกล้อง และเปิดผ่าน https) ใช้ปุ่มล็อตทดลองแทนได้'));
+        .catch(() => setErr(t('เปิดกล้องไม่ได้ (ต้องอนุญาตกล้อง และเปิดผ่าน https) ใช้ปุ่มล็อตทดลองแทนได้', 'Camera unavailable (allow camera access over https) — use the demo lot button instead')));
     });
     return () => {
       stopped = true;
@@ -45,6 +47,7 @@ function Scanner({ onToken }) {
 }
 
 export default function Kiosk() {
+  const t = useT();
   const [step, setStep] = useState('scan');
   const [lot, setLot] = useState(null);
   const [token, setToken] = useState('');
@@ -72,15 +75,15 @@ export default function Kiosk() {
 
   useEffect(() => {
     if (step !== 'done') return;
-    const t = setTimeout(reset, 30000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(reset, 30000);
+    return () => clearTimeout(timer);
   }, [step]);
 
-  async function loadToken(t) {
+  async function loadToken(tok) {
     setError('');
     try {
-      const out = await api('scan', { method: 'POST', data: { token: t } });
-      setToken(t);
+      const out = await api('scan', { method: 'POST', data: { token: tok } });
+      setToken(tok);
       setLot(out.lot);
       setStep('measure');
       await sleep(1600); // จำลองเซนเซอร์ความชื้นที่ช่องป้อน
@@ -126,12 +129,12 @@ export default function Kiosk() {
     setStep('run');
     const m = MODES[choice.mode];
     const stages = [
-      ['📸 ถ่ายรูปวัตถุดิบ', 900],
-      ...(choice.mode === 'briquette' ? [['🔥 อุ่นขดลวดเกลียวอัด (จริง 10–15 นาที · เร่งเวลา)', 2400]] : []),
-      ['⚙️ เครื่องสับกำลังทำงาน', 2200],
-      [`↪️ ลิ้นสลับทาง → ${m.code} ${m.th}`, 900],
-      ...(choice.mode === 'chop' ? [] : [[choice.mode === 'pellet' ? '🟤 แม่พิมพ์อัดเม็ด' : '🪵 เกลียวอัดแท่ง + ตัดท่อน', 2600]]),
-      ['⚖️ ชั่งน้ำหนักสินค้า', 1100],
+      [t('📸 ถ่ายรูปวัตถุดิบ', '📸 Photographing input'), 900],
+      ...(choice.mode === 'briquette' ? [[t('🔥 อุ่นขดลวดเกลียวอัด (จริง 10–15 นาที · เร่งเวลา)', '🔥 Heating the screw press (10–15 min in reality · sped up)'), 2400]] : []),
+      [t('⚙️ เครื่องสับกำลังทำงาน', '⚙️ Hammer mill running'), 2200],
+      [`↪️ ${t('ลิ้นสลับทาง', 'Diverter')} → ${m.code} ${t.pick(m)}`, 900],
+      ...(choice.mode === 'chop' ? [] : [[choice.mode === 'pellet' ? t('🟤 แม่พิมพ์อัดเม็ด', '🟤 Pellet die') : t('🪵 เกลียวอัดแท่ง + ตัดท่อน', '🪵 Screw press + cutter'), 2600]]),
+      [t('⚖️ ชั่งน้ำหนักสินค้า', '⚖️ Weighing output'), 1100],
     ];
     const total = stages.reduce((s, [, ms]) => s + ms, 0);
     let elapsed = 0;
@@ -167,24 +170,25 @@ export default function Kiosk() {
   return (
     <div className="kiosk">
       <header>
-        <b>🌾 ไร่ไม่เผา</b>
-        <span>
-          ตู้ {MACHINE_ID} {lot && `· ล็อต ${lot.id} · ${lot.name}`}
+        <b>🌾 {t('ไร่ไม่เผา', 'Rai Mai Phao')}</b>
+        <span className="row">
+          {t('ตู้', 'Unit')} {MACHINE_ID} {lot && `· ${t('ล็อต', 'Lot')} ${lot.id} · ${lot.name}`}
+          <LangToggle dark />
         </span>
       </header>
 
       {step === 'scan' && (
         <section className="k-center">
-          <h1>สแกน QR จาก LINE</h1>
-          <p>เปิดแชต "ไร่ไม่เผา" แล้วแสดง QR ของล็อตให้กล้อง</p>
+          <h1>{t('สแกน QR จาก LINE', 'Scan the QR from LINE')}</h1>
+          <p>{t('เปิดแชต "ไร่ไม่เผา" แล้วแสดง QR ของล็อตให้กล้อง', 'Open the "Rai Mai Phao" chat and show your lot QR to the camera')}</p>
           <Scanner onToken={loadToken} />
           {error && <p className="k-err">{error}</p>}
           <div className="k-row">
             <button className="k-btn ghost" onClick={() => demoLot(false)}>
-              ใช้ล็อตทดลอง
+              {t('ใช้ล็อตทดลอง', 'Use demo lot')}
             </button>
             <button className="k-btn ghost" onClick={() => demoLot(true)}>
-              ล็อตทดลอง (เศษพืชชื้น)
+              {t('ล็อตทดลอง (เศษพืชชื้น)', 'Demo lot (too wet)')}
             </button>
           </div>
         </section>
@@ -193,29 +197,32 @@ export default function Kiosk() {
       {lot && ['measure', 'wet', 'mode', 'flush'].includes(step) && (
         <div className="k-stats">
           <div>
-            <small>{residueName(lot.residue)} · น้ำหนักรับเข้า{lot.driver && ` · 🛻 ส่งโดย ${lot.driver.name}`}</small>
+            <small>
+              {t.pick(RESIDUES[lot.residue])} · {t('น้ำหนักรับเข้า', 'weight in')}
+              {lot.driver && ` · 🛻 ${t('ส่งโดย', 'delivered by')} ${lot.driver.name}`}
+            </small>
             <b>{kg(lot.receivedKg)}</b>
           </div>
           <div>
-            <small>ความชื้น (ไม่เกิน {MOISTURE_MAX}%)</small>
-            <b className={moisture > MOISTURE_MAX ? 'bad' : 'good'}>{moisture == null ? 'กำลังวัด…' : `${moisture}% ${moisture > MOISTURE_MAX ? '✗' : '✓'}`}</b>
+            <small>{t(`ความชื้น (ไม่เกิน ${MOISTURE_MAX}%)`, `Moisture (max ${MOISTURE_MAX}%)`)}</small>
+            <b className={moisture > MOISTURE_MAX ? 'bad' : 'good'}>{moisture == null ? t('กำลังวัด…', 'Measuring…') : `${moisture}% ${moisture > MOISTURE_MAX ? '✗' : '✓'}`}</b>
           </div>
         </div>
       )}
 
       {step === 'wet' && (
         <section className="k-center">
-          <h1 className="bad">ความชื้นเกิน ไม่รับวัตถุดิบ</h1>
-          <p>กรุณานำไปตากให้แห้งที่ลานตากก่อน แล้วสแกน QR เดิมอีกครั้ง</p>
+          <h1 className="bad">{t('ความชื้นเกิน ไม่รับวัตถุดิบ', 'Too wet — material rejected')}</h1>
+          <p>{t('กรุณานำไปตากให้แห้งที่ลานตากก่อน แล้วสแกน QR เดิมอีกครั้ง', 'Please dry it at the drying yard, then scan the same QR again')}</p>
           <button className="k-btn" onClick={reset}>
-            ตกลง
+            {t('ตกลง', 'OK')}
           </button>
         </section>
       )}
 
       {step === 'mode' && (
         <section>
-          <h2>{order ? `คำสั่งซื้อ: ${order.buyer} — ระบบเลือกโหมดให้` : 'เลือกโหมดแปรรูป (รับกลับไปใช้เอง)'}</h2>
+          <h2>{order ? t(`คำสั่งซื้อ: ${order.buyer} — ระบบเลือกโหมดให้`, `Order: ${order.buyer_en} — mode selected automatically`) : t('เลือกโหมดแปรรูป (รับกลับไปใช้เอง)', 'Choose a mode (take-home)')}</h2>
           <div className="k-modes">
             {Object.values(MODES).map((m) => (
               <button
@@ -226,14 +233,14 @@ export default function Kiosk() {
                 onClick={() => setChoice({ ...choice, mode: m.key })}
               >
                 <i className="k-code">{m.code}</i>
-                <b>{m.th}</b>
-                <span>{m.products.join(' / ')}</span>
+                <b>{t.pick(m)}</b>
+                <span>{t.pick(m, 'products').join(' / ')}</span>
               </button>
             ))}
           </div>
           {choice.mode === 'pellet' && (
             <div className="k-row">
-              {Object.entries(PELLET_TYPES).map(([k, v]) => (
+              {Object.entries(t.lang === 'en' ? PELLET_TYPES_EN : PELLET_TYPES).map(([k, v]) => (
                 <button key={k} disabled={Boolean(order)} className={`k-btn ${choice.pelletType === k ? '' : 'ghost'}`} onClick={() => setChoice({ ...choice, pelletType: k })}>
                   {v}
                 </button>
@@ -242,10 +249,10 @@ export default function Kiosk() {
           )}
           <div className="k-row">
             <button className="k-btn ghost" onClick={reset}>
-              ยกเลิก
+              {t('ยกเลิก', 'Cancel')}
             </button>
             <button className="k-btn big" onClick={start}>
-              เริ่มแปรรูป ▶
+              {t('เริ่มแปรรูป ▶', 'Start ▶')}
             </button>
           </div>
         </section>
@@ -253,10 +260,10 @@ export default function Kiosk() {
 
       {step === 'flush' && (
         <section className="k-center">
-          <h1>⚠️ ต้องไล่วัตถุดิบเก่าก่อน</h1>
-          <p>งานก่อนหน้าเป็นเชื้อเพลิง แต่งานนี้เป็นอาหารสัตว์ กรุณาเดินเครื่องเปล่าและทำความสะอาดช่องทางให้เรียบร้อย</p>
+          <h1>{t('⚠️ ต้องไล่วัตถุดิบเก่าก่อน', '⚠️ Flush required first')}</h1>
+          <p>{t('งานก่อนหน้าเป็นเชื้อเพลิง แต่งานนี้เป็นอาหารสัตว์ กรุณาเดินเครื่องเปล่าและทำความสะอาดช่องทางให้เรียบร้อย', 'The previous run was fuel and this one is animal feed. Run the machine empty and clean the channels first.')}</p>
           <button className="k-btn" onClick={run}>
-            พนักงานยืนยัน: ทำความสะอาดแล้ว
+            {t('พนักงานยืนยัน: ทำความสะอาดแล้ว', 'Operator confirms: cleaned')}
           </button>
         </section>
       )}
@@ -267,60 +274,70 @@ export default function Kiosk() {
           <div className="k-bar">
             <i style={{ width: `${Math.round(progress * 100)}%` }} />
           </div>
-          <p>ห้ามเปิดฝาช่องป้อน · เปิดฝา = เครื่องหยุดทันที</p>
+          <p>{t('ห้ามเปิดฝาช่องป้อน · เปิดฝา = เครื่องหยุดทันที', 'Keep the hopper lid closed · opening it stops the machine')}</p>
         </section>
       )}
 
       {step === 'send' && (
         <section className="k-center">
-          <h1>กำลังส่งใบรับของเข้า LINE…</h1>
+          <h1>{t('กำลังส่งใบรับของเข้า LINE…', 'Sending receipt to LINE…')}</h1>
         </section>
       )}
 
       {step === 'done' && result && (
         <section className="k-center">
-          <h1>✅ เสร็จเรียบร้อย</h1>
+          <h1>✅ {t('เสร็จเรียบร้อย', 'Done')}</h1>
           <div className="k-receipt">
             <div>
-              <small>ก่อนแปรรูป</small>
+              <small>{t('ก่อนแปรรูป', 'Input')}</small>
               <b>{kg(result.job.inputKg)}</b>
             </div>
             <div>
-              <small>ได้ {MODES[result.job.mode].code} {MODES[result.job.mode].th}</small>
+              <small>
+                {t('ได้', 'Output')} {MODES[result.job.mode].code} {t.pick(MODES[result.job.mode])}
+              </small>
               <b>{kg(result.job.outputKg)}</b>
             </div>
             <div>
-              <small>{result.job.amount >= 0 ? 'เกษตรกรได้รับ' : 'ค่าบริการ'}</small>
+              <small>{result.job.amount >= 0 ? t('เกษตรกรได้รับ', 'Farmer receives') : t('ค่าบริการ', 'Service fee')}</small>
               <b>{thb(Math.abs(result.job.amount))}</b>
             </div>
           </div>
           {result.job.pickupFee > 0 && (
             <p>
-              หักค่ารถ {thb(result.job.pickupFee)} · คนขับ {result.job.driverName} ได้ {thb(result.job.driverEarn)}
+              {t('หักค่ารถ', 'Pickup fee')} {thb(result.job.pickupFee)} · {t('คนขับ', 'driver')} {result.job.driverName} {t('ได้', 'earns')} {thb(result.job.driverEarn)}
             </p>
           )}
-          <p className="good">🌱 ลดการเผาได้ {kg(result.job.savedKg)} ≈ PM2.5 {result.job.pm25g} กรัม</p>
-          <p>{result.pushed ? 'ส่งใบรับของเข้า LINE ของเจ้าของล็อตแล้ว ✓' : lot.hasLine ? `ส่งเข้า LINE ไม่สำเร็จ ${result.pushError || ''}` : 'ล็อตทดลอง: ไม่ได้ส่งเข้า LINE'}</p>
+          <p className="good">
+            🌱 {t('ลดการเผาได้', 'Burning avoided:')} {kg(result.job.savedKg)} ≈ PM2.5 {result.job.pm25g} {t('กรัม', 'g')}
+          </p>
+          <p>
+            {result.pushed
+              ? t('ส่งใบรับของเข้า LINE ของเจ้าของล็อตแล้ว ✓', 'Receipt sent to the owner’s LINE ✓')
+              : lot.hasLine
+                ? `${t('ส่งเข้า LINE ไม่สำเร็จ', 'LINE delivery failed')} ${result.pushError || ''}`
+                : t('ล็อตทดลอง: ไม่ได้ส่งเข้า LINE', 'Demo lot: not sent to LINE')}
+          </p>
           <button className="k-btn" onClick={reset}>
-            คิวถัดไป
+            {t('คิวถัดไป', 'Next in queue')}
           </button>
         </section>
       )}
 
       {(step === 'stopped' || step === 'error') && (
         <section className="k-center">
-          <h1 className="bad">{step === 'stopped' ? '⛔ หยุดฉุกเฉิน' : 'เกิดข้อผิดพลาด'}</h1>
-          <p>{step === 'stopped' ? 'ตัดไฟมอเตอร์ทั้งหมดแล้ว ตรวจสอบความปลอดภัยก่อนรีเซ็ต' : error}</p>
+          <h1 className="bad">{step === 'stopped' ? t('⛔ หยุดฉุกเฉิน', '⛔ Emergency stop') : t('เกิดข้อผิดพลาด', 'Error')}</h1>
+          <p>{step === 'stopped' ? t('ตัดไฟมอเตอร์ทั้งหมดแล้ว ตรวจสอบความปลอดภัยก่อนรีเซ็ต', 'All motors cut. Check safety before resetting.') : error}</p>
           <button className="k-btn" onClick={reset}>
-            รีเซ็ต
+            {t('รีเซ็ต', 'Reset')}
           </button>
         </section>
       )}
 
-      <button className="estop" onClick={emergencyStop} aria-label="หยุดฉุกเฉิน">
-        หยุด
+      <button className="estop" onClick={emergencyStop} aria-label={t('หยุดฉุกเฉิน', 'Emergency stop')}>
+        {t('หยุด', 'E-')}
         <br />
-        ฉุกเฉิน
+        {t('ฉุกเฉิน', 'STOP')}
       </button>
     </div>
   );

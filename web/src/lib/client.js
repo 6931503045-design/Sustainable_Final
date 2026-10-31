@@ -36,6 +36,10 @@ export const local = {
   },
 };
 
-export const thb = (n) => `${Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ฿`;
-export const kg = (n) => `${Number(n).toLocaleString('th-TH', { maximumFractionDigits: 1 })} กก.`;
-export const when = (iso) => new Date(iso).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+// รูปแบบตัวเลข/วันที่ตามภาษาที่เลือก (i18n.jsx เรียก setFormatLang เมื่อสลับภาษา)
+let fmtLang = local.get('lang', 'th');
+export const setFormatLang = (l) => (fmtLang = l);
+const loc = () => (fmtLang === 'en' ? 'en-GB' : 'th-TH');
+export const thb = (n) => `${Number(n).toLocaleString(loc(), { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ฿`;
+export const kg = (n) => `${Number(n).toLocaleString(loc(), { maximumFractionDigits: 1 })} ${fmtLang === 'en' ? 'kg' : 'กก.'}`;
+export const when = (iso) => new Date(iso).toLocaleString(loc(), { dateStyle: 'medium', timeStyle: 'short' });
