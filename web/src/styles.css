@@ -241,3 +241,12 @@ tr.seed td { color: #7a857d; }
   .bmc { grid-template-columns: 1fr 1fr; grid-template-areas: 'vp vp' 'cs cr' 'ch kp' 'ka kr' 'cost rev'; }
   .slide.title { justify-content: center; }
 }
+
+/* หน้าร่างบูธ */
+.booth-fig { padding: 10px; }
+.booth-fig img { display: block; width: 100%; height: auto; border-radius: 10px; }
+.booth-fig figcaption { margin-top: 6px; }
+.badge-num { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--straw); border: 2px solid var(--ink); font-weight: 700; font-size: .85rem; }
+.print-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; align-items: end; }
+.print-item { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); font-size: .85rem; text-align: center; }
+.print-item img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
