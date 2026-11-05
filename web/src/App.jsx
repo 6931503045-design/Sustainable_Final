@@ -9,9 +9,10 @@ const Privacy = lazy(() => import('./pages/Privacy.jsx'));
 const Driver = lazy(() => import('./pages/Driver.jsx'));
 const Prices = lazy(() => import('./pages/Prices.jsx'));
 const Present = lazy(() => import('./pages/Present.jsx'));
+const Booth = lazy(() => import('./pages/Booth.jsx'));
 
 // LIFF เปิด liff.line.me/<id>/driver → <endpoint>/liff/driver
-const ROUTES = { '/': Home, '/liff': Farmer, '/liff/driver': Driver, '/driver': Driver, '/prices': Prices, '/present': Present, '/kiosk': Kiosk, '/dashboard': Dashboard, '/privacy': Privacy };
+const ROUTES = { '/': Home, '/liff': Farmer, '/liff/driver': Driver, '/driver': Driver, '/prices': Prices, '/present': Present, '/booth': Booth, '/kiosk': Kiosk, '/dashboard': Dashboard, '/privacy': Privacy };
 
 export function go(path) {
   window.history.pushState({}, '', path);
@@ -49,6 +50,7 @@ export function Nav() {
         <Link to="/liff/driver">{t('คนขับ', 'Driver')}</Link>
         <Link to="/kiosk">{t('หน้าจอตู้', 'Kiosk')}</Link>
         <Link to="/dashboard">Dashboard</Link>
+        <Link to="/booth">{t('บูธ', 'Booth')}</Link>
         <LangToggle dark />
       </nav>
     </header>
