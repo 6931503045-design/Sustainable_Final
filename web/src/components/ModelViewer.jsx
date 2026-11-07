@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import '@google/model-viewer';
+import ASSET from '../data/model-asset.json';
 import HS from '../data/hotspots.json';
 import { FLOW_STEPS, PARTS } from '../data/parts.js';
 import { MODES } from '../../shared/rules.js';
@@ -11,6 +12,12 @@ const MIN_ALPHA = 0.12;
 const MODE_PART = { pellet: 'pellet', briquette: 'press', chop: 'chute' };
 const PART_IDS = Object.keys(PARTS);
 const STEP_MS = 5000;
+const HS_MIN_GAP = 38; // px: จุดชี้ที่ห่างกันน้อยกว่านี้บนจอจะถูกดันออกจากกัน
+
+// โมเดลบีบอัดด้วย Draco (scripts/optimize-model.mjs) ตัวถอดรหัสเก็บไว้ในเว็บเอง ไม่ต้องโหลดจาก gstatic
+// (model-viewer อ่านค่านี้จาก self.ModelViewerElement ตอนสร้าง element ทุกครั้ง)
+self.ModelViewerElement = { ...self.ModelViewerElement, dracoDecoderLocation: ASSET.draco };
+const reducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const smooth = (k) => k * k * (3 - 2 * k); // ใกล้เคียง ease in-out ของ keyframe ใน Blender
 const vec = (p) => `${p[0]}m ${p[1]}m ${p[2]}m`;
@@ -34,13 +41,15 @@ function along(points, k) {
 }
 
 // โมเดล 3D จาก Blender: จุดชี้ชิ้นส่วน (คืออะไร/ทำอะไร/มีไว้ทำไม) + flow การทำงาน + X-ray + แยกชิ้น
-export default function ModelViewer({ tall = false }) {
+export default function ModelViewer({ tall = false, poster = true, onReady }) {
   const t = useT();
   const ref = useRef(null);
   const walls = useRef([]);
   const anim = useRef(0);
   const dotAnim = useRef(0);
   const [ready, setReady] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [failed, setFailed] = useState(false);
   const [xray, setXray] = useState(0);
   const [explode, setExplode] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -63,14 +72,82 @@ export default function ModelViewer({ tall = false }) {
         .filter((m) => XRAY_MATERIALS.includes(m.name))
         .map((m) => ({ m, color: [...m.pbrMetallicRoughness.baseColorFactor] }));
       setReady(true);
+      onReady?.();
     };
+    const onProgress = (e) => setProgress(e.detail.totalProgress);
+    const onError = () => setFailed(true);
     el.addEventListener('load', onLoad);
+    el.addEventListener('progress', onProgress);
+    el.addEventListener('error', onError);
     return () => {
       el.removeEventListener('load', onLoad);
+      el.removeEventListener('progress', onProgress);
+      el.removeEventListener('error', onError);
       cancelAnimationFrame(anim.current);
       cancelAnimationFrame(dotAnim.current);
     };
   }, []);
+
+  // ---------------- จุดชี้ไม่ซ้อนกัน: หลังกล้องขยับ ดูตำแหน่งบนจอแล้วดันจุดที่ใกล้กันเกินออก (แค่การแสดงผล)
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !ready) return;
+    let raf = 0;
+    const spread = () => {
+      raf = 0;
+      const pts = PART_IDS.map((id, i) => {
+        const btn = el.querySelector(`[slot="hotspot-${id}"]`);
+        if (!btn || btn.offsetParent === null) return null;
+        // ตำแหน่งจริงบนจอ ลบระยะที่เคยดันไว้ออก = ตำแหน่งตั้งต้นของจุด
+        const r = btn.querySelector('.hs-dot').getBoundingClientRect();
+        const [sx, sy] = (btn.dataset.shift || '0,0').split(',').map(Number);
+        return { i, btn, x: r.x + r.width / 2 - sx, y: r.y + r.height / 2 - sy, dx: 0, dy: 0, front: btn.hasAttribute('data-visible') };
+      });
+      const vis = pts.filter(Boolean);
+      // 1) ดันจุดที่ใกล้กันเกินออกจากกัน (ทำซ้ำหลายรอบให้นิ่ง)
+      for (let round = 0; round < 6; round++)
+        for (let i = 0; i < vis.length; i++)
+          for (let j = i + 1; j < vis.length; j++) {
+            const a = vis[i];
+            const b = vis[j];
+            const ddx = b.x + b.dx - (a.x + a.dx);
+            const ddy = b.y + b.dy - (a.y + a.dy);
+            const d = Math.hypot(ddx, ddy);
+            if (d >= HS_MIN_GAP) continue;
+            const push = (HS_MIN_GAP - d) / 2;
+            const [ux, uy] = d > 0.5 ? [ddx / d, ddy / d] : [0, 1];
+            a.dx -= ux * push;
+            a.dy -= uy * push;
+            b.dx += ux * push;
+            b.dy += uy * push;
+          }
+      for (const p of vis) {
+        p.btn.dataset.shift = `${p.dx.toFixed(1)},${p.dy.toFixed(1)}`;
+        p.btn.style.setProperty('--hs-shift', `${p.dx.toFixed(1)}px, ${p.dy.toFixed(1)}px`);
+      }
+      // 2) ชื่อชิ้นส่วนที่จะทับกันซ่อนไว้ก่อน (จุดที่หันหน้าเข้ากล้องได้ที่ก่อน) ชี้/กด/โฟกัสจุดนั้นแล้วชื่อจะขึ้น
+      const hit = (r, o) => r.left < o.right + 2 && r.right > o.left - 2 && r.top < o.bottom + 2 && r.bottom > o.top - 2;
+      const taken = vis.map((p) => p.btn.querySelector('.hs-dot').getBoundingClientRect());
+      for (const p of [...vis].sort((a, b) => b.front - a.front || a.i - b.i)) {
+        const label = p.btn.querySelector('.hs-label');
+        p.btn.classList.remove('label-hidden');
+        const r = label.getBoundingClientRect();
+        if (!r.width) continue; // ปิดชื่ออยู่ ไม่ต้องจัด
+        const own = taken[vis.indexOf(p)];
+        if (taken.some((o) => o !== own && hit(r, o))) p.btn.classList.add('label-hidden');
+        else taken.push(r);
+      }
+    };
+    const onCamera = () => {
+      if (!raf) raf = requestAnimationFrame(spread);
+    };
+    el.addEventListener('camera-change', onCamera);
+    onCamera();
+    return () => {
+      el.removeEventListener('camera-change', onCamera);
+      cancelAnimationFrame(raf);
+    };
+  }, [ready, labels, explode, selected, flow?.step]);
 
   // ---------------- แยกชิ้น: เลื่อน animation + ขยับจุดชี้ตามชิ้นส่วน + ถอยกล้อง
   useEffect(() => {
@@ -182,14 +259,14 @@ export default function ModelViewer({ tall = false }) {
   const part = selected && PARTS[selected];
 
   return (
-    <div className={`viewer ${tall ? 'tall' : ''}`}>
+    <div className={`viewer ${tall ? 'tall' : ''} ${ready ? 'is-ready' : ''}`}>
       <model-viewer
         ref={ref}
-        src="/model/rai_mai_phao.glb"
+        src={ASSET.glb}
         alt={t('โมเดล 3 มิติ ตู้แปรรูปเศษวัสดุเกษตร ไร่ไม่เผา', '3D model of the Rai Mai Phao crop-residue processor')}
         camera-controls
         touch-action="pan-y"
-        auto-rotate={!flow && !selected ? true : undefined}
+        auto-rotate={!flow && !selected && !reducedMotion ? true : undefined}
         interpolation-decay="120"
         shadow-intensity="1"
         exposure="1.05"
@@ -197,11 +274,20 @@ export default function ModelViewer({ tall = false }) {
         max-camera-orbit="auto auto 250%"
         style={{ width: '100%', height: '100%', background: 'transparent' }}
       >
+        {/* poster={false}: หน้าแรกวางภาพ poster ไว้ชั้นล่างเอง */}
+        <div slot="poster" className={poster ? 'mv-poster' : 'mv-poster-none'}>
+          {poster && <img src={ASSET.poster} alt={t.k('model.posterAlt')} width="675" height="900" decoding="async" />}
+        </div>
+        <div slot="progress-bar" className={`mv-progress-slot ${ready ? 'done' : ''}`}>
+          <span className="mv-progress-bar" style={{ transform: `scaleX(${progress})` }} aria-hidden="true" />
+        </div>
         {PART_IDS.map((id, i) => (
           <button
             key={id}
             slot={`hotspot-${id}`}
-            className={`hs ${focusId === id ? 'active' : ''} ${labels && !flow ? 'labelled' : ''}`}
+            // จุดชี้แสดงเมื่อเปิด "ชื่อชิ้นส่วน" (หรือเป็นชิ้นที่กำลังดู) และซ่อนไว้จนโมเดลโหลดเสร็จ
+            className={`hs ${focusId === id ? 'active' : ''} ${labels && !flow ? 'labelled' : ''} ${ready && ((labels && !flow) || focusId === id) ? 'shown' : ''}`}
+            tabIndex={ready && ((labels && !flow) || focusId === id) ? 0 : -1}
             data-position={vec(HS.hotspots[id].pos)}
             data-normal="0 0 1"
             onClick={() => pick(id)}
@@ -214,13 +300,29 @@ export default function ModelViewer({ tall = false }) {
         {flow && <div slot="hotspot-flowdot" className="flow-dot" data-position={vec(HS.flow.common[0])} data-normal="0 0 1" style={{ '--c': MODES[flow.mode].color }} />}
       </model-viewer>
 
+      {/* ข้อความกำลังโหลด อยู่นอก model-viewer ตำแหน่งเดียวกับตอนโหลดโค้ด (ไม่กระตุก) */}
+      {!ready && (
+        <div className="mv-progress" role="status" aria-live="polite">
+          <span className="mv-progress-pill">
+            {failed ? (
+              t.k('model.error')
+            ) : (
+              <>
+                <span className="mv-spinner" aria-hidden="true" />
+                {t.k('model.loading')} {Math.round(progress * 100)}%
+              </>
+            )}
+          </span>
+        </div>
+      )}
+
       <div className="viewer-top">
         {!flow ? (
           <>
             <button type="button" className="chip" onClick={startFlow} disabled={!ready}>
               ▶ {t('ดู flow การทำงาน', 'Show workflow')}
             </button>
-            <button type="button" className={`chip ${labels ? 'on' : ''}`} onClick={() => setLabels(!labels)}>
+            <button type="button" className={`chip ${labels ? 'on' : ''}`} aria-pressed={labels} onClick={() => setLabels(!labels)} disabled={!ready}>
               🏷️ {t('ชื่อชิ้นส่วน', 'Part names')}
             </button>
           </>

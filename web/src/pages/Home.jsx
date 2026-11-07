@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react';
-import { Link, Nav } from '../App.jsx';
-import { MODES, PM25_G_PER_KG } from '../../shared/rules.js';
+import { lazy, Suspense, useState } from 'react';
+import { Footer, Link, Nav } from '../App.jsx';
+import { MODES } from '../../shared/rules.js';
 import { useT } from '../lib/i18n.jsx';
 import { liffLink } from '../lib/line.js';
+import ASSET from '../data/model-asset.json';
 
 const ModelViewer = lazy(() => import('../components/ModelViewer.jsx'));
 
@@ -15,6 +16,7 @@ const STEPS = [
 
 export default function Home() {
   const t = useT();
+  const [modelReady, setModelReady] = useState(false);
   return (
     <>
       <Nav />
@@ -22,11 +24,15 @@ export default function Home() {
         <section className="hero">
           <div>
             <p className="eyebrow">Sustainability & Social Responsibility Innovation Expo</p>
-            <h1>
-              {t('เปลี่ยนเศษพืชที่เคยเผา', 'Turn crop waste that used to be burned')}
-              <br />
-              {t('ให้เป็น', 'into ')}
-              <span className="hl">{t('รายได้', 'income')}</span>
+            {/* แบ่งเป็นวลีที่ไม่ตัดกลางคำ (ภาษาไทยไม่มีเว้นวรรค เบราว์เซอร์จะตัดผิดที่) */}
+            <h1 className="hero-title">
+              <span className="phrase">{t.k('hero.title1')}</span>
+              <wbr /> <span className="phrase">{t.k('hero.title2')}</span>
+              <wbr /> <span className="phrase">
+                {t.k('hero.title3')}
+                {t.lang === 'en' ? ' ' : ''}
+                <span className="hl">{t.k('hero.titleHl')}</span>
+              </span>
             </h1>
             <p className="lead">
               {t(
@@ -35,26 +41,43 @@ export default function Home() {
               )}
             </p>
             <div className="cta">
-              <Link to="/present" className="btn primary">
-                ▶ {t('เริ่มพรีเซนต์', 'Start presentation')}
-              </Link>
               {liffLink() ? (
-                <a href={liffLink()} className="btn">
-                  {t('เปิดใน LINE: แจ้งขาย / เรียกรถ', 'Open in LINE: sell / book pickup')}
+                <a href={liffLink()} className="btn primary cta-main">
+                  {t.k('hero.ctaLine')}
                 </a>
               ) : (
-                <Link to="/liff" className="btn">
-                  {t('ลองแจ้งเศษพืช', 'Try selling residue')}
+                <Link to="/liff" className="btn primary cta-main">
+                  {t.k('hero.ctaTry')}
                 </Link>
               )}
-              <Link to="/prices" className="btn">
-                {t('ราคารับซื้อ', 'Buy prices')}
+              <Link to="/present" className="btn outline">
+                {t.k('hero.ctaPresent')}
+              </Link>
+              <Link to="/prices" className="text-link">
+                {t.k('hero.ctaPrices')} →
               </Link>
             </div>
           </div>
-          <Suspense fallback={<div className="viewer skeleton">{t('กำลังโหลดโมเดล 3D…', 'Loading 3D model…')}</div>}>
-            <ModelViewer />
-          </Suspense>
+          {/* ภาพ poster อยู่ชั้นล่างตั้งแต่แรก (ไม่ถูกสร้างใหม่ตอนโค้ด 3D โหลดเสร็จ = ไม่มีจอว่าง ไม่กระตุก) แล้วซ่อนเมื่อโมเดลพร้อม */}
+          <div className={`hero-visual ${modelReady ? 'model-ready' : ''}`}>
+            <div className="mv-poster hero-poster" aria-hidden={modelReady}>
+              <img src={ASSET.poster} alt={t.k('model.posterAlt')} width="675" height="900" fetchpriority="high" />
+            </div>
+            <Suspense
+              fallback={
+                <div className="viewer viewer-loading">
+                  <div className="mv-progress" role="status">
+                    <span className="mv-progress-pill">
+                      <span className="mv-spinner" aria-hidden="true" />
+                      {t.k('model.loading')}
+                    </span>
+                  </div>
+                </div>
+              }
+            >
+              <ModelViewer poster={false} onReady={() => setModelReady(true)} />
+            </Suspense>
+          </div>
         </section>
 
         <section>
@@ -91,18 +114,8 @@ export default function Home() {
             ))}
           </ol>
         </section>
-
-        <section className="card note">
-          <b>* {t('ความโปร่งใสของตัวเลข', 'About the numbers')}</b>
-          <p>
-            {t(
-              `นี่คือต้นแบบสำหรับนำเสนอ ตัวเลขสเปก ราคา ผลผลิต และค่าประมาณ PM2.5 (${PM25_G_PER_KG} กรัม ต่อเศษพืช 1 กก. ที่ไม่ถูกเผา) เป็นค่าสมมติ ต้องทดสอบจริงและอ้างอิงงานวิจัยก่อนใช้งาน`,
-              `This is a presentation prototype. Specs, prices, yields and the PM2.5 estimate (${PM25_G_PER_KG} g per kg of residue not burned) are assumptions to be tested and referenced before real use.`,
-            )}
-          </p>
-          <Link to="/privacy">{t('นโยบายความเป็นส่วนตัว (PDPA)', 'Privacy policy (PDPA)')}</Link>
-        </section>
       </main>
+      <Footer />
     </>
   );
 }

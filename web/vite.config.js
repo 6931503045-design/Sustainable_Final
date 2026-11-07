@@ -42,7 +42,19 @@ function devApi() {
   };
 }
 
+// โหลดภาพ poster ของโมเดล 3D ล่วงหน้าเฉพาะหน้าแรก (ชื่อไฟล์มี hash อ่านจาก model-asset.json)
+function posterPreload() {
+  return {
+    name: 'poster-preload',
+    transformIndexHtml() {
+      const { poster } = JSON.parse(fs.readFileSync(path.resolve('src/data/model-asset.json'), 'utf8'));
+      const js = `if(location.pathname==='/'){var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/webp';l.href=${JSON.stringify(poster)};l.fetchPriority='high';document.head.appendChild(l)}`;
+      return [{ tag: 'script', children: js, injectTo: 'head' }];
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   Object.assign(process.env, loadEnv(mode, process.cwd(), '')); // ให้ api/ อ่าน .env.local ได้ตอน dev
-  return { plugins: [react(), devApi()] };
+  return { plugins: [react(), devApi(), posterPreload()] };
 });
