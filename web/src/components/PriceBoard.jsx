@@ -1,15 +1,18 @@
 // ตารางราคารับซื้อ + เครื่องคิดเงิน (ใช้ทั้งใน LIFF และหน้าเว็บ)
 import { useState } from 'react';
-import { MODES, MOISTURE_MAX, MOISTURE_REJECT, MOISTURE_TIERS, PICKUP, RESIDUES, SERVICE_FEE, settle } from '../../shared/rules.js';
+import { MODES, MOISTURE_MAX, MOISTURE_REJECT, MOISTURE_TIERS, PICKUP, RESIDUES, SERVICE_FEE, pickupAllowed, settle } from '../../shared/rules.js';
 import { thb } from '../lib/client.js';
-import { PickupNotes, PickupRows } from './PickupRows.jsx';
+import { PickupLoad, PickupNotes, PickupRows } from './PickupRows.jsx';
 import { useT } from '../lib/i18n.jsx';
 
 export default function PriceBoard({ onSell }) {
   const t = useT();
-  const [c, setC] = useState({ residue: 'corn', kg: 200, moisture: 14, pickup: true, km: 6 });
+  const [c, setC] = useState({ residue: 'corn', kg: 300, moisture: 14, purpose: 'sell', mode: 'chop', pickup: true, km: 6, vehicle: 'pickup', fullLoad: false });
   const set = (k, num = true) => (e) => setC({ ...c, [k]: num ? Number(e.target.value) : e.target.value });
-  const q = settle({ residue: c.residue, purpose: 'sell', inputKg: c.kg || 0, moisture: c.moisture, pickupKm: c.pickup ? c.km : null });
+  const sell = c.purpose === 'sell';
+  // เรียกรถได้เมื่อ ≥ 300 กก. หรือเต็มคันรถ ถ้าไม่ผ่าน คิดแบบขนมาเอง
+  const canPickup = c.pickup && pickupAllowed(c.kg, c.fullLoad);
+  const q = settle({ residue: c.residue, mode: c.mode, purpose: c.purpose, inputKg: c.kg || 0, moisture: c.moisture, pickupKm: canPickup ? c.km : null });
   const unit = t('กก.', 'kg');
 
   return (
@@ -42,6 +45,10 @@ export default function PriceBoard({ onSell }) {
           <br />
           {t.k('price.fundNote')}
           <br />
+          {t.k('price.fundOnlySell')}
+          <br />
+          {t.k('pickup.minRule', { min: PICKUP.minKg })}
+          <br />
           <small className="hint">
             {t(`คนขับในพื้นที่ได้ ${Math.round(PICKUP.driverShare * 100)}% ของค่ารถตามสูตร ส่วนที่เหลือเป็นค่าดูแลระบบ`, `Local drivers keep ${Math.round(PICKUP.driverShare * 100)}% of the full rate; the rest is the platform fee`)}
           </small>
@@ -66,6 +73,29 @@ export default function PriceBoard({ onSell }) {
 
       <div className="card form">
         <h2>🧮 {t('คำนวณรายได้', 'Income calculator')}</h2>
+        <p className="hint">{t.k('price.prototype')}</p>
+        <div className="choice" role="group">
+          {[
+            ['sell', t.k('price.sellCo')],
+            ['self', t.k('price.takeHome')],
+          ].map(([k, label]) => (
+            <button type="button" key={k} className={c.purpose === k ? 'on' : ''} aria-pressed={c.purpose === k} onClick={() => setC({ ...c, purpose: k })}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {!sell && (
+          <label>
+            {t.k('price.mode')}
+            <select value={c.mode} onChange={set('mode', false)}>
+              {Object.values(MODES).map((m) => (
+                <option key={m.key} value={m.key}>
+                  {m.code} · {t.pick(m)} — {SERVICE_FEE[m.key].toFixed(2)} ฿/{unit}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
           {t('ชนิด', 'Residue')}
           <select value={c.residue} onChange={set('residue', false)}>
@@ -88,10 +118,13 @@ export default function PriceBoard({ onSell }) {
           <input type="checkbox" checked={c.pickup} onChange={(e) => setC({ ...c, pickup: e.target.checked })} /> {t('เรียกรถไปรับ', 'Book a pickup')}
         </label>
         {c.pickup && (
-          <label>
-            {t('ระยะทางถึงตู้', 'Distance to machine')}: <b>{c.km} {t('กม.', 'km')}</b>
-            <input type="range" min="1" max={PICKUP.maxKm} value={c.km} onChange={set('km')} />
-          </label>
+          <>
+            <label>
+              {t('ระยะทางถึงตู้', 'Distance to machine')}: <b>{c.km} {t('กม.', 'km')}</b>
+              <input type="range" min="1" max={PICKUP.maxKm} value={c.km} onChange={set('km')} />
+            </label>
+            <PickupLoad kg={c.kg} vehicle={c.vehicle} fullLoad={c.fullLoad} onChange={(x) => setC({ ...c, ...x })} />
+          </>
         )}
         <div className="quote">
           {c.moisture > MOISTURE_MAX ? (
@@ -99,15 +132,16 @@ export default function PriceBoard({ onSell }) {
           ) : (
             <>
               <div className="row between">
-                <span>{t('ค่าเศษพืช', 'Residue value')}</span>
-                <b>{thb(q.gross)}</b>
+                <span>{sell ? t('ค่าเศษพืช', 'Residue value') : `${t.k('price.serviceFee')} (${SERVICE_FEE[c.mode].toFixed(2)} ฿/${unit})`}</span>
+                <b>{thb(Math.abs(q.gross))}</b>
               </div>
-              {c.pickup && <PickupRows q={q} km={c.km} />}
+              {canPickup && <PickupRows q={q} km={c.km} />}
               <div className="row between total">
-                <span>{t('ได้รับสุทธิ', 'Net payout')}</span>
-                <b>{thb(q.amount)}</b>
+                <span>{q.amount >= 0 ? t('ได้รับสุทธิ', 'Net payout') : t.k('price.totalPay')}</span>
+                <b>{thb(Math.abs(q.amount))}</b>
               </div>
-              {c.pickup && <PickupNotes q={q} />}
+              {canPickup && <PickupNotes q={q} />}
+              {canPickup && !sell && <p className="hint">{t.k('price.noFund')}</p>}
               <small className="hint">
                 🌱 {t('ลดการเผา', 'Burning avoided')} {c.kg} {unit} ≈ PM2.5 {q.pm25g} {t('กรัม (ค่าประมาณ)', 'g (estimate)')}
               </small>

@@ -18,11 +18,14 @@ export function seedJobs(days = 21) {
   for (let i = 0; i < 46; i++) {
     const mode = MODE_KEYS[Math.floor(r() * 3)];
     const purpose = r() < 0.7 ? 'sell' : 'self';
-    const inputKg = round(40 + r() * 260, 1);
+    let inputKg = round(40 + r() * 260, 1);
     const outputKg = round(inputKg * MODES[mode].yield * (0.97 + r() * 0.05), 1);
     const residue = RES_KEYS[Math.floor(r() * RES_KEYS.length)];
     const moisture = round(9 + r() * 9, 1);
-    const pickupKm = r() < 0.45 ? round(2 + r() * 14, 1) : null; // ~45% เรียกรถ
+    const pickupKm = r() < 0.45 ? round(2 + r() * 8, 1) : null; // ~45% เรียกรถ (รัศมี 10 กม.)
+    // เรียกรถได้เมื่อ ≥ 300 กก. หรือเต็มคันรถ: ส่วนใหญ่ขนเยอะ บางเที่ยวเป็นฟางเต็มคันแต่เบา
+    const fullLoad = pickupKm != null && inputKg < 300 && r() < 0.35;
+    if (pickupKm != null && inputKg < 300 && !fullLoad) inputKg = round(300 + r() * 500, 1);
     out.push({
       id: `SEED-${i}`,
       lotId: `LT-${1000 + i}`,
@@ -37,6 +40,7 @@ export function seedJobs(days = 21) {
       outputKg,
       ...settle({ residue, mode, purpose, inputKg, outputKg, moisture, pickupKm }),
       driverName: pickupKm ? NAMES[Math.floor(r() * NAMES.length)] : null,
+      fullLoad,
       at: new Date(now - (days - (i / 46) * days) * 86400000).toISOString(),
       seed: true,
     });

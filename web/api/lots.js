@@ -1,7 +1,7 @@
 // POST /api/lots  ลงทะเบียนเศษพืช (จาก LIFF) → คืน QR token + ส่ง QR เข้า LINE
 //                 ถ้าเลือก "เรียกรถไปรับ" จะสร้างงานรับของ และแจ้งคนขับในพื้นที่
 // GET  /api/lots  รายการคิว (ข้อมูลที่ปิดบังชื่อแล้ว)
-import { MODES, PICKUP, PURPOSES, RESIDUES, distanceKm, maskName, settle } from '../shared/rules.js';
+import { MODES, PICKUP, PICKUP_VEHICLES, PURPOSES, RESIDUES, distanceKm, maskName, pickupAllowed, settle } from '../shared/rules.js';
 import { lotMessage, newJobMessage } from './_lib/flex.js';
 import { body, fail, json, originOf } from './_lib/http.js';
 import { lineConfigured, multicast, push, verifyIdToken } from './_lib/line.js';
@@ -31,6 +31,8 @@ export async function POST(request) {
     if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180) || (!lat && !lng)) return fail('กรุณาแชร์ตำแหน่งกองเศษพืช');
     km = distanceKm({ lat, lng });
     if (km > PICKUP.maxKm) return fail(`อยู่ไกลเกิน ${PICKUP.maxKm} กม. ยังไม่มีบริการรับในพื้นที่นี้`);
+    if (!pickupAllowed(estKg, b.fullLoad)) return fail(`น้ำหนักไม่ถึง ${PICKUP.minKg} กก. เลือกรวมเที่ยวกับไร่ใกล้เคียง หรือขนมาเอง`);
+    if (!PICKUP_VEHICLES.includes(b.vehicle)) return fail('กรุณาเลือกประเภทรถ');
     if (!PHONE_RE.test(String(b.phone || ''))) return fail('กรุณากรอกเบอร์โทรให้คนขับติดต่อ (เช่น 0812345678)');
   }
 
@@ -50,6 +52,8 @@ export async function POST(request) {
     wantMode: b.purpose === 'self' ? b.wantMode : null,
     delivery: pickup ? 'pickup' : 'self',
     distanceKm: km,
+    vehicle: pickup ? b.vehicle : null,
+    fullLoad: pickup ? Boolean(b.fullLoad) : false,
     village: String(b.village || '').slice(0, 80),
     slot: b.slot || null,
     name: maskName(user.name),

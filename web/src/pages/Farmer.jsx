@@ -4,8 +4,8 @@ import { Link, Nav } from '../App.jsx';
 import QR from '../components/QR.jsx';
 import PriceBoard from '../components/PriceBoard.jsx';
 import DemoNotice from '../components/DemoNotice.jsx';
-import { PickupNotes, PickupRows } from '../components/PickupRows.jsx';
-import { MACHINE, MODES, PICKUP, PURPOSES, PURPOSES_EN, RESIDUES, distanceKm, settle } from '../../shared/rules.js';
+import { PickupLoad, PickupNotes, PickupRows } from '../components/PickupRows.jsx';
+import { MACHINE, MODES, PICKUP, PURPOSES, PURPOSES_EN, RESIDUES, distanceKm, pickupAllowed, settle } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
 import { LangToggle, useT } from '../lib/i18n.jsx';
 import { lineSession } from '../lib/line.js';
@@ -61,7 +61,7 @@ function Consent({ onAccept }) {
   );
 }
 
-function Quote({ q, pickup, km }) {
+function Quote({ q, pickup, km, purpose }) {
   const t = useT();
   if (!q) return null;
   return (
@@ -76,6 +76,7 @@ function Quote({ q, pickup, km }) {
         <b>{thb(Math.abs(q.amount))}</b>
       </div>
       {pickup && <PickupNotes q={q} />}
+      {pickup && purpose === 'self' && <p className="hint">{t.k('price.noFund')}</p>}
       <small className="hint">{t('ยอดจริงคิดจากน้ำหนักที่ชั่งและความชื้นที่ตู้', 'Final amount uses the weight and moisture measured at the machine')}</small>
     </div>
   );
@@ -94,6 +95,8 @@ function NewLot({ session, onCreated }) {
     loc: null,
     landmark: '',
     phone: local.get('phone', ''),
+    vehicle: 'pickup',
+    fullLoad: false,
   });
   const [busy, setBusy] = useState(false);
   const [locBusy, setLocBusy] = useState(false);
@@ -103,7 +106,8 @@ function NewLot({ session, onCreated }) {
   const pickup = f.delivery === 'pickup';
   const km = f.loc ? distanceKm(f.loc) : null;
   const kgNum = Number(f.estKg);
-  const quote = kgNum > 0 ? settle({ residue: f.residue, mode: f.wantMode, purpose: f.purpose, inputKg: kgNum, pickupKm: pickup && km != null ? km : null }) : null;
+  const loadOk = !pickup || !(kgNum > 0) || pickupAllowed(kgNum, f.fullLoad); // เรียกรถได้เมื่อ ≥ 300 กก. หรือเต็มคันรถ
+  const quote = kgNum > 0 ? settle({ residue: f.residue, mode: f.wantMode, purpose: f.purpose, inputKg: kgNum, pickupKm: pickup && loadOk && km != null ? km : null }) : null;
   const purposes = t.lang === 'en' ? PURPOSES_EN : PURPOSES;
 
   function locate(demo = false) {
@@ -129,6 +133,7 @@ function NewLot({ session, onCreated }) {
     setErr('');
     if (!f.slot) return setErr(pickup ? t('กรุณาเลือกวันเวลาให้ไปรับ', 'Please choose a pickup time') : t('กรุณาเลือกเวลานัด', 'Please choose a time'));
     if (pickup && !f.loc) return setErr(t('กรุณาแชร์ตำแหน่งกองเศษพืช', 'Please share the pile location'));
+    if (!loadOk) return setErr(t.k('pickup.underMin', { min: PICKUP.minKg }));
     setBusy(true);
     try {
       const out = await api('lots', {
@@ -203,6 +208,7 @@ function NewLot({ session, onCreated }) {
 
       {pickup && (
         <div className="pickup-box">
+          <PickupLoad kg={kgNum} vehicle={f.vehicle} fullLoad={f.fullLoad} onChange={(x) => setF({ ...f, ...x })} />
           <div className="row">
             <button type="button" className="btn" onClick={() => locate(false)} disabled={locBusy}>
               📍 {locBusy ? t('กำลังหาตำแหน่ง…', 'Locating…') : f.loc ? t('แชร์ตำแหน่งใหม่', 'Update location') : t('แชร์ตำแหน่งกองเศษพืช', 'Share pile location')}
@@ -242,10 +248,10 @@ function NewLot({ session, onCreated }) {
         </div>
       </fieldset>
 
-      <Quote q={quote} pickup={pickup && km != null} km={km} />
+      <Quote q={quote} pickup={pickup && loadOk && km != null} km={km} purpose={f.purpose} />
       <p className="hint">{t('⚠️ เศษพืชต้องแห้ง ความชื้นไม่เกิน 20% (15–20% ลดราคา 10%)', '⚠️ Residue must be dry: max 20% moisture (15–20% gets −10%)')}</p>
       {err && <p className="error">{err}</p>}
-      <button className="btn primary block" disabled={busy}>
+      <button className="btn primary block" disabled={busy || !loadOk}>
         {busy ? t('กำลังส่ง…', 'Sending…') : pickup ? t('ยืนยันและเรียกรถ', 'Confirm and book pickup') : t('ยืนยันและรับ QR', 'Confirm and get QR')}
       </button>
     </form>

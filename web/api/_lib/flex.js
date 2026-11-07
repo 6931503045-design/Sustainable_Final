@@ -158,7 +158,8 @@ export function newJobMessage(p) {
       spacing: 'sm',
       contents: [
         row('เศษพืช', residueName(p.residue)),
-        row('น้ำหนักประมาณ', `${p.estKg} กก.`),
+        row('น้ำหนักประมาณ', `${p.estKg} กก.${p.fullLoad ? ' (เต็มคันรถ)' : ''}`),
+        ...(p.vehicle ? [row('รถที่ต้องการ', VEHICLES[p.vehicle]?.th || p.vehicle)] : []),
         row('ให้ไปรับ', fmtSlot(p.slot)),
         row('ค่าจ้างของคุณ', baht(p.driverEarn), true, GREEN),
         note('ใครกดรับก่อนได้งาน พิกัดและเบอร์โทรจะแสดงหลังรับงาน'),
@@ -176,7 +177,7 @@ export function acceptedMessage(p) {
       type: 'box',
       layout: 'vertical',
       spacing: 'sm',
-      contents: [row('คนขับ', p.driver.name, true), row('รถ', `${v} ${p.driver.plate}`), row('จะไปรับ', fmtSlot(p.slot)), note('กรุณาเตรียมเศษพืชให้แห้ง มัดหรือใส่กระสอบไว้ เพื่อขนได้เร็ว')],
+      contents: [row('คนขับ', p.driver.name, true), row('รถ', `${v} ${p.driver.plate}`), row('จะไปรับ', fmtSlot(p.slot)), note('กรุณาเตรียมเศษพืชให้แห้ง ฟางกองหลวมกินที่มาก แนะนำอัดก้อนหรือใส่ถุงบิ๊กแบ็ก (ยืมได้ที่สถานี)')],
     },
     footer: footer(p.driver.phone && button(`โทรหาคนขับ ${p.driver.phone}`, `tel:${p.driver.phone}`)),
   });

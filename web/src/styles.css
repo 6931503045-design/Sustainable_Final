@@ -379,3 +379,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 .quote .row { gap: 12px; }
 .quote .row > :last-child { white-space: nowrap; flex: none; }
 .nowrap { white-space: nowrap; }
+
+/* Dashboard: การ์ดตัวเลขสรุป (5 ใบ) */
+.stats-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.pickup-load fieldset { margin-bottom: 8px; }
+.pickup-load .choice small { font-weight: 400; }

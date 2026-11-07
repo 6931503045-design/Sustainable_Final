@@ -30,7 +30,7 @@ const { DELETE: eraseMe } = await import('../api/me.js');
 const { GET: stats } = await import('../api/stats.js');
 const { POST: maintenance } = await import('../api/maintenance.js');
 const { GET: qr } = await import('../api/qr.js');
-const { needsFlush, settle, maskName, MACHINE } = await import('../shared/rules.js');
+const { needsFlush, settle, maskName, pickupAllowed, MACHINE } = await import('../shared/rules.js');
 const { POST: registerDriver, GET: driverInfo } = await import('../api/drivers.js');
 const { GET: listPickups, POST: pickupAction } = await import('../api/pickups.js');
 
@@ -152,13 +152,38 @@ test('กติกาธุรกิจ', () => {
 
 
 const near = { lat: MACHINE.lat + 0.03, lng: MACHINE.lng - 0.02 };
-const pickupBody = { ...lotBody, estKg: 200, delivery: 'pickup', loc: near, landmark: 'หลังวัด', phone: '0811111111' };
+const pickupBody = { ...lotBody, estKg: 300, delivery: 'pickup', vehicle: 'pickup', loc: near, landmark: 'หลังวัด', phone: '0811111111' };
 const get = (path) => new Request(`https://rmp.test/api/${path}`);
 
 test('เรียกรถ: ต้องมีพิกัดและเบอร์ และไม่เกินรัศมี', async () => {
   assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, loc: null }))).status, 400);
   assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, phone: '12' }))).status, 400);
   assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, loc: { lat: 18.79, lng: 98.98 } }))).status, 400); // เชียงใหม่ ไกลเกิน
+  assert.equal((await createLot(req('lots', { ...pickupBody, demo: true, vehicle: 'moto' }))).status, 400); // เรียกได้แค่กระบะติดคอก / อีแต๋น
+});
+
+test('เรียกรถ: ต้อง ≥ 300 กก. หรือเต็มคันรถ', async () => {
+  const under = await createLot(req('lots', { ...pickupBody, demo: true, estKg: 200 }));
+  assert.equal(under.status, 400);
+  assert.match((await under.json()).error, /ไม่ถึง 300 กก/);
+  const full = await (await createLot(req('lots', { ...pickupBody, demo: true, estKg: 150, fullLoad: true, vehicle: 'etan' }))).json();
+  assert.equal(full.lot.fullLoad, true);
+  assert.equal(full.lot.vehicle, 'etan');
+  assert.equal(pickupAllowed(300), true);
+  assert.equal(pickupAllowed(299), false);
+});
+
+test('กองทุนช่วยจ่ายเฉพาะขายให้บริษัท: รับกลับจ่ายค่ารถเต็ม', () => {
+  const self = settle({ residue: 'corn', mode: 'chop', purpose: 'self', inputKg: 300, pickupKm: 6 });
+  assert.equal(self.pickupFull, 140); // 50 + 60 + 30
+  assert.equal(self.pickupFee, 140);
+  assert.equal(self.pickupSubsidy, 0);
+  assert.equal(self.amount, -260); // ค่าแปรรูป 0.40 × 300 = 120 + ค่ารถ 140
+  const sold = settle({ residue: 'corn', purpose: 'sell', inputKg: 300, pickupKm: 6 });
+  assert.equal(sold.pickupFee, 90); // 30% ของ 300
+  assert.equal(sold.pickupSubsidy, 50);
+  assert.equal(sold.driverEarn, 126); // 90% ของ 140 เท่ากันทั้งสองแบบ
+  assert.equal(self.driverEarn, 126);
 });
 
 test('ระบบรับของแบบ Grab: แจ้งคนขับ → รับงาน (กันรับซ้ำ) → รับของ → ชั่งที่ตู้ → จ่ายเกษตรกรและคนขับ', async () => {
