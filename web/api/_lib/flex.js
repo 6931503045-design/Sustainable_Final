@@ -1,5 +1,5 @@
 // ข้อความ Flex ที่ส่งเข้า LINE
-import { MACHINE, MODES, MOISTURE_TIERS, PELLET_TYPES, PICKUP, PURPOSES, RESIDUES, SERVICE_FEE, VEHICLES, modeLabel, residueName } from '../../shared/rules.js';
+import { MACHINE, MODES, MOISTURE_REJECT, MOISTURE_TIERS, PELLET_TYPES, PICKUP, PURPOSES, RESIDUES, SERVICE_FEE, VEHICLES, modeLabel, residueName } from '../../shared/rules.js';
 
 const GREEN = '#2f6b3a';
 const baht = (n) => `${Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`;
@@ -50,13 +50,13 @@ export function priceMessage() {
         sep,
         { type: 'text', text: 'ความชื้น', weight: 'bold', size: 'sm', margin: 'md' },
         ...MOISTURE_TIERS.map((t) => ({ type: 'text', text: `• ${t.th}`, size: 'xs', wrap: true })),
-        { type: 'text', text: '• เกิน 20% ตู้ไม่รับ (นำไปตากก่อน)', size: 'xs', wrap: true },
+        { type: 'text', text: `• ${MOISTURE_REJECT.th}`, size: 'xs', wrap: true },
         sep,
         { type: 'text', text: 'รับกลับไปใช้เอง (ค่าบริการ/กก.)', weight: 'bold', size: 'sm', margin: 'md' },
         ...Object.values(MODES).map((m) => row(modeLabel(m.key), `${SERVICE_FEE[m.key].toFixed(2)} ฿`)),
         sep,
         { type: 'text', text: '🛻 เรียกรถไปรับถึงไร่', weight: 'bold', size: 'sm', margin: 'md' },
-        { type: 'text', text: `${PICKUP.base} ฿ + ${PICKUP.perKm} ฿/กม. + ${PICKUP.perKg} ฿/กก. (หักจากยอดขาย) รัศมี ${PICKUP.maxKm} กม.`, size: 'xs', wrap: true },
+        { type: 'text', text: `ค่าเรียก ${PICKUP.base} ฿ + ${PICKUP.perKm} ฿/กม. (รวมไปกลับ) + ${PICKUP.perKg} ฿/กก. หักจากยอดขาย ไม่เกิน ${Math.round(PICKUP.capShare * 100)}% ของยอดขาย · รัศมี ${PICKUP.maxKm} กม.`, size: 'xs', wrap: true },
       ],
     },
     footer: footer(liffButton('คำนวณราคา / แจ้งขาย', '?tab=price')),

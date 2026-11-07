@@ -73,6 +73,7 @@ function Quote({ q, pickup, km }) {
         <div className="row between">
           <span>
             {t('ค่ารถรับถึงที่', 'Pickup fee')} ({km} {t('กม.', 'km')})
+            {q.pickupCapped && <small className="hint"> · {t(`เพดาน ${Math.round(PICKUP.capShare * 100)}% ของยอดขาย`, `capped at ${Math.round(PICKUP.capShare * 100)}% of the sale`)}</small>}
           </span>
           <b>− {thb(q.pickupFee)}</b>
         </div>
