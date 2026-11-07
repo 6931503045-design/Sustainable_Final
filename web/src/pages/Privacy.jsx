@@ -1,4 +1,4 @@
-import { Nav } from '../App.jsx';
+import { Footer, Nav } from '../App.jsx';
 import { useT } from '../lib/i18n.jsx';
 import { CONSENT_VERSION } from './Farmer.jsx';
 
@@ -60,6 +60,7 @@ export default function Privacy() {
         <h2>{t('ระยะเวลาเก็บ', 'Retention')}</h2>
         <p>{t('เก็บตลอดระยะเวลาที่ใช้บริการ และลบภายใน 30 วันหลังขอลบ เว้นแต่ต้องเก็บรายการซื้อขายตามกฎหมายบัญชี/ภาษี', 'Kept while you use the service and deleted within 30 days of a request, except transactions required by accounting/tax law.')}</p>
       </main>
+      <Footer />
     </>
   );
 }
