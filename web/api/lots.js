@@ -1,7 +1,7 @@
 // POST /api/lots  ลงทะเบียนเศษพืช (จาก LIFF) → คืน QR token + ส่ง QR เข้า LINE
 //                 ถ้าเลือก "เรียกรถไปรับ" จะสร้างงานรับของ และแจ้งคนขับในพื้นที่
 // GET  /api/lots  รายการคิว (ข้อมูลที่ปิดบังชื่อแล้ว)
-import { MODES, PICKUP, PURPOSES, RESIDUES, distanceKm, maskName, pickupFee, settle } from '../shared/rules.js';
+import { MODES, PICKUP, PURPOSES, RESIDUES, distanceKm, maskName, settle } from '../shared/rules.js';
 import { lotMessage, newJobMessage } from './_lib/flex.js';
 import { body, fail, json, originOf } from './_lib/http.js';
 import { lineConfigured, multicast, push, verifyIdToken } from './_lib/line.js';
@@ -62,10 +62,10 @@ export async function POST(request) {
 
   let pickupRec = null;
   if (pickup) {
-    const f = pickupFee(km, lot.estKg);
+    // ใช้ค่ารถจากใบเสนอราคา (คิดเพดาน 30% ของยอดขายแล้ว)
     pickupRec = await createPickup(lot, token, {
-      fee: f.fee,
-      driverEarn: f.driver,
+      fee: quote.pickupFee,
+      driverEarn: quote.driverEarn,
       loc: { lat: Number(b.loc.lat), lng: Number(b.loc.lng) },
       landmark: String(b.landmark || '').slice(0, 120),
       phone: b.phone,

@@ -213,7 +213,7 @@ export default function Kiosk() {
       {step === 'wet' && (
         <section className="k-center">
           <h1 className="bad">{t('ความชื้นเกิน ไม่รับวัตถุดิบ', 'Too wet — material rejected')}</h1>
-          <p>{t('กรุณานำไปตากให้แห้งที่ลานตากก่อน แล้วสแกน QR เดิมอีกครั้ง', 'Please dry it at the drying yard, then scan the same QR again')}</p>
+          <p>{t('ต้องตากให้แห้งก่อน ฝากตากที่ลานของสถานีได้ แล้วสแกน QR เดิมอีกครั้ง', 'Dry it first — you can leave it on the station’s drying yard — then scan the same QR again')}</p>
           <button className="k-btn" onClick={reset}>
             {t('ตกลง', 'OK')}
           </button>
@@ -305,7 +305,8 @@ export default function Kiosk() {
           </div>
           {result.job.pickupFee > 0 && (
             <p>
-              {t('หักค่ารถ', 'Pickup fee')} {thb(result.job.pickupFee)} · {t('คนขับ', 'driver')} {result.job.driverName} {t('ได้', 'earns')} {thb(result.job.driverEarn)}
+              {t('หักค่ารถ', 'Pickup fee')} {thb(result.job.pickupFee)}
+              {result.job.pickupSubsidy > 0 && ` (${t.k('price.fund')} ${thb(result.job.pickupSubsidy)})`} · {t('คนขับ', 'driver')} {result.job.driverName} {t('ได้', 'earns')} {thb(result.job.driverEarn)}
             </p>
           )}
           <p className="good">

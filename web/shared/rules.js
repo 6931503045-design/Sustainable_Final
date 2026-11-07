@@ -16,9 +16,9 @@ export const PELLET_TYPES_EN = { feed: 'Animal feed (small die)', fuel: 'Fuel (l
 // วัตถุดิบ 4 ชนิด พร้อมราคารับซื้อ (บาท/กก. ที่ชั่งตอนรับเข้า)
 export const RESIDUES = {
   corn: { th: 'ต้น ซัง และเปลือกข้าวโพด', en: 'Corn stalks, cobs & husks', buy: 1.0 },
-  rice_straw: { th: 'ฟางและตอซังข้าว', en: 'Rice straw & stubble', buy: 1.2 },
+  rice_straw: { th: 'ฟางและตอซังข้าว', en: 'Rice straw & stubble', buy: 1.0 },
   sugarcane_leaf: { th: 'ใบอ้อย', en: 'Sugarcane leaves', buy: 0.8 },
-  orchard_branch: { th: 'กิ่งไม้ตัดแต่งสวน (ลำไย/ลิ้นจี่)', en: 'Orchard prunings (longan/lychee)', buy: 1.5 },
+  orchard_branch: { th: 'กิ่งไม้ตัดแต่งสวน (ลำไย/ลิ้นจี่)', en: 'Orchard prunings (longan/lychee)', buy: 1.0 },
 };
 export const residueName = (k) => RESIDUES[k]?.th || k;
 
@@ -29,7 +29,7 @@ export const PURPOSES = {
 export const PURPOSES_EN = { sell: 'Sell to Rai Mai Phao (get paid)', self: 'Process & take it home (pay a service fee)' };
 
 // ค่าบริการแปรรูปเมื่อรับกลับไปใช้เอง (บาท/กก.)
-export const SERVICE_FEE = { pellet: 0.8, briquette: 1.0, chop: 0.3 };
+export const SERVICE_FEE = { pellet: 1.2, briquette: 1.5, chop: 0.4 };
 
 // ความชื้น: ยิ่งแห้งยิ่งได้ราคาเต็ม
 export const MOISTURE_MAX = 20; // % เกินนี้เครื่องไม่รับ
@@ -37,15 +37,21 @@ export const MOISTURE_TIERS = [
   { max: 15, factor: 1.0, th: 'แห้งดี (≤ 15%) ราคาเต็ม', en: 'Dry (≤ 15%): full price' },
   { max: 20, factor: 0.9, th: 'ค่อนข้างชื้น (15–20%) ลด 10%', en: 'Slightly damp (15–20%): −10%' },
 ];
+// เกิน MOISTURE_MAX: ตู้ไม่รับ ให้ตากให้แห้งก่อน (ฝากตากที่ลานของสถานีได้)
+export const MOISTURE_REJECT = {
+  th: `เกิน ${MOISTURE_MAX}% ตู้ไม่รับ ต้องตากให้แห้งก่อน ฝากตากที่ลานของสถานีได้`,
+  en: `Over ${MOISTURE_MAX}%: not accepted — dry it first (you can leave it on the station's drying yard)`,
+};
 export const moistureFactor = (m) => (MOISTURE_TIERS.find((t) => m <= t.max) || { factor: 0 }).factor;
 
 // ระบบรับของถึงที่ (แบบ Grab): คนในพื้นที่ขับรถไปรับ ได้ค่าจ้าง ไร่ไม่เผาหักค่าแพลตฟอร์ม
 export const PICKUP = {
-  base: 20, // บาท/งาน
-  perKm: 4, // บาท/กม. (ระยะทางถนนโดยประมาณ)
+  base: 50, // บาท/งาน (ค่าเรียกรถ)
+  perKm: 10, // บาท/กม. ของระยะทางถนนขาเดียว (ราคานี้รวมไปกลับแล้ว)
   perKg: 0.1, // บาท/กก.
   driverShare: 0.9, // คนขับได้ 90% ที่เหลือเป็นค่าแพลตฟอร์ม
-  maxKm: 30,
+  maxKm: 10,
+  capShare: 0.3, // เกษตรกรจ่ายค่ารถไม่เกิน 30% ของยอดขาย ส่วนเกินกองทุนอุดหนุนค่ารถช่วยจ่าย (คนขับยังได้ค่ารถเต็ม)
   roadFactor: 1.3, // ระยะถนน ≈ ระยะเส้นตรง × 1.3
 };
 export const VEHICLES = {
@@ -72,9 +78,17 @@ export function distanceKm(a, b = MACHINE) {
   return round(2 * R * Math.asin(Math.sqrt(h)) * PICKUP.roadFactor, 1);
 }
 
-export function pickupFee(km, kg) {
-  const fee = Math.round(PICKUP.base + km * PICKUP.perKm + kg * PICKUP.perKg);
-  return { fee, driver: round(fee * PICKUP.driverShare, 2), platform: round(fee * (1 - PICKUP.driverShare), 2) };
+/**
+ * ค่ารถตามสูตร (full) = ค่าเรียก + ต่อกม. + ต่อกก.
+ * เกษตรกรจ่าย (fee) ไม่เกิน 30% ของยอดขาย ส่วนต่าง (subsidy) กองทุนอุดหนุนค่ารถจ่าย
+ * คนขับได้ 90% ของค่ารถตามสูตรเสมอ ที่เหลือเป็นค่าแพลตฟอร์ม
+ */
+export function pickupFee(km, kg, sale = 0) {
+  const full = Math.round(PICKUP.base + km * PICKUP.perKm + kg * PICKUP.perKg);
+  const cap = sale > 0 ? Math.floor(sale * PICKUP.capShare) : Infinity;
+  const fee = Math.min(full, cap);
+  const driver = round(full * PICKUP.driverShare, 2);
+  return { fee, full, subsidy: full - fee, capped: fee < full, driver, platform: round(full - driver, 2) };
 }
 
 /**
@@ -83,10 +97,13 @@ export function pickupFee(km, kg) {
  */
 export function settle({ residue, mode, purpose, inputKg, outputKg, moisture = 0, pickupKm = null }) {
   const gross = purpose === 'sell' ? inputKg * (RESIDUES[residue]?.buy ?? 0) * moistureFactor(moisture) : -inputKg * SERVICE_FEE[mode];
-  const pick = pickupKm == null ? null : pickupFee(pickupKm, inputKg);
+  const pick = pickupKm == null ? null : pickupFee(pickupKm, inputKg, purpose === 'sell' ? gross : 0);
   return {
     gross: round(gross, 2),
-    pickupFee: pick ? pick.fee : 0,
+    pickupFee: pick ? pick.fee : 0, // ส่วนที่เกษตรกรจ่าย (หักจากยอด)
+    pickupFull: pick ? pick.full : 0, // ค่ารถตามสูตร
+    pickupSubsidy: pick ? pick.subsidy : 0, // กองทุนช่วยจ่ายค่ารถ
+    pickupCapped: pick ? pick.capped : false,
     driverEarn: pick ? pick.driver : 0,
     amount: round(gross - (pick ? pick.fee : 0), 2),
     savedKg: round(inputKg, 1),

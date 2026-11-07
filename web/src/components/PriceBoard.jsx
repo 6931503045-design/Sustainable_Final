@@ -1,7 +1,8 @@
 // ตารางราคารับซื้อ + เครื่องคิดเงิน (ใช้ทั้งใน LIFF และหน้าเว็บ)
 import { useState } from 'react';
-import { MODES, MOISTURE_TIERS, PICKUP, RESIDUES, SERVICE_FEE, settle } from '../../shared/rules.js';
+import { MODES, MOISTURE_MAX, MOISTURE_REJECT, MOISTURE_TIERS, PICKUP, RESIDUES, SERVICE_FEE, settle } from '../../shared/rules.js';
 import { thb } from '../lib/client.js';
+import { PickupNotes, PickupRows } from './PickupRows.jsx';
 import { useT } from '../lib/i18n.jsx';
 
 export default function PriceBoard({ onSell }) {
@@ -31,14 +32,18 @@ export default function PriceBoard({ onSell }) {
           {MOISTURE_TIERS.map((tier) => (
             <li key={tier.max}>{t.pick(tier)}</li>
           ))}
-          <li>{t('เกิน 20% ตู้ไม่รับ ต้องตากให้แห้งก่อน', 'Over 20%: rejected — dry it first')}</li>
+          <li>{t.pick(MOISTURE_REJECT)}</li>
         </ul>
         <h3>🛻 {t('ค่ารถไปรับถึงไร่', 'Farm pickup fee')}</h3>
         <p>
-          {PICKUP.base} ฿ + {PICKUP.perKm} ฿/{t('กม.', 'km')} + {PICKUP.perKg} ฿/{unit} {t('หักจากยอดขาย', 'deducted from the sale')} ({t('รัศมี', 'within')} {PICKUP.maxKm} {t('กม.', 'km')})
+          {t('ค่าเรียกรถ', 'Call-out')} {PICKUP.base} ฿ + {PICKUP.perKm} ฿/{t('กม. (รวมไปกลับ)', 'km (round trip included)')} + {PICKUP.perKg} ฿/{unit} {t('หักจากยอดขาย', 'deducted from the sale')} ({t('รัศมี', 'within')} {PICKUP.maxKm} {t('กม.', 'km')})
+          <br />
+          <b>{t.k('price.capRule', { cap: Math.round(PICKUP.capShare * 100) })}</b>
+          <br />
+          {t.k('price.fundNote')}
           <br />
           <small className="hint">
-            {t(`คนขับในพื้นที่ได้ ${Math.round(PICKUP.driverShare * 100)}% ส่วนที่เหลือเป็นค่าดูแลระบบ`, `Local drivers keep ${Math.round(PICKUP.driverShare * 100)}%; the rest is the platform fee`)}
+            {t(`คนขับในพื้นที่ได้ ${Math.round(PICKUP.driverShare * 100)}% ของค่ารถตามสูตร ส่วนที่เหลือเป็นค่าดูแลระบบ`, `Local drivers keep ${Math.round(PICKUP.driverShare * 100)}% of the full rate; the rest is the platform fee`)}
           </small>
         </p>
         <h3>{t('แปรรูปแล้วรับกลับไปใช้เอง (ค่าบริการ/กก.)', 'Process & take home (service fee per kg)')}</h3>
@@ -89,24 +94,20 @@ export default function PriceBoard({ onSell }) {
           </label>
         )}
         <div className="quote">
-          {c.moisture > 20 ? (
-            <div className="error">{t('ความชื้นเกิน 20% ตู้ไม่รับ', 'Over 20% moisture: rejected')}</div>
+          {c.moisture > MOISTURE_MAX ? (
+            <div className="error">{t.pick(MOISTURE_REJECT)}</div>
           ) : (
             <>
               <div className="row between">
                 <span>{t('ค่าเศษพืช', 'Residue value')}</span>
                 <b>{thb(q.gross)}</b>
               </div>
-              {c.pickup && (
-                <div className="row between">
-                  <span>{t('ค่ารถ', 'Pickup fee')}</span>
-                  <b>− {thb(q.pickupFee)}</b>
-                </div>
-              )}
+              {c.pickup && <PickupRows q={q} km={c.km} />}
               <div className="row between total">
                 <span>{t('ได้รับสุทธิ', 'Net payout')}</span>
                 <b>{thb(q.amount)}</b>
               </div>
+              {c.pickup && <PickupNotes q={q} />}
               <small className="hint">
                 🌱 {t('ลดการเผา', 'Burning avoided')} {c.kg} {unit} ≈ PM2.5 {q.pm25g} {t('กรัม (ค่าประมาณ)', 'g (estimate)')}
               </small>
