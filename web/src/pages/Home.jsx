@@ -23,7 +23,7 @@ export default function Home() {
       <main className="wrap">
         <section className="hero">
           <div>
-            <p className="eyebrow">Sustainability & Social Responsibility Innovation Expo</p>
+            <p className="eyebrow">{t.k('hero.eyebrow')}</p>
             {/* แบ่งเป็นวลีที่ไม่ตัดกลางคำ (ภาษาไทยไม่มีเว้นวรรค เบราว์เซอร์จะตัดผิดที่) */}
             <h1 className="hero-title">
               <span className="phrase">{t.k('hero.title1')}</span>

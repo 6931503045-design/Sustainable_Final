@@ -45,7 +45,7 @@ export default function Present() {
   const slides = [
     <Slide key="title" className="title">
       <div>
-        <p className="eyebrow">Sustainability & Social Responsibility Innovation Expo · 2302103</p>
+        <p className="eyebrow">{t.k('hero.eyebrow')} · 2302103</p>
         <h1>🌾 {t('ไร่ไม่เผา', 'Rai Mai Phao')}</h1>
         <p className="big">{t('เปลี่ยนเศษพืชที่เคยเผา ให้เป็นรายได้ของชุมชน', 'Turning crop waste that used to be burned into community income')}</p>
         <p>{t('ตู้แปรรูปเศษวัสดุเกษตรอัจฉริยะ 3 in 1 + ระบบ LINE รับซื้อและเรียกรถแบบ Grab', 'A smart 3-in-1 residue processor + a LINE system for buying and Grab-style pickups')}</p>
@@ -78,7 +78,7 @@ export default function Present() {
         <h2>{t('ตู้ 3 in 1', 'The 3-in-1 cabinet')}</h2>
         <p>{t('85 × 180 × 60 ซม. จัดชั้นตามแรงโน้มถ่วง วัตถุดิบไหลลงเอง', '85 × 180 × 60 cm, stacked so material flows down by gravity')}</p>
         <ul className="points small">
-          <li>{t('กดตัวเลขบนโมเดลเพื่อดูว่าแต่ละชิ้นทำอะไร มีไว้ทำไม', 'Tap a number on the model to see what each part does and why')}</li>
+          <li>{t.k('present.partsHint')}</li>
           <li>{t('กด "ดู flow การทำงาน" เพื่อดูวัตถุดิบวิ่งผ่านตู้ เลือกโหมด A / B / C ได้', 'Press "Show workflow" to watch material move through the cabinet — choose A / B / C')}</li>
           <li>{t('X-ray / แยกชิ้น ดูโครงสร้างภายใน', 'X-ray / Exploded to see inside')}</li>
         </ul>

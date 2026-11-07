@@ -13,6 +13,13 @@ const MODE_PART = { pellet: 'pellet', briquette: 'press', chop: 'chute' };
 const PART_IDS = Object.keys(PARTS);
 const STEP_MS = 5000;
 const HS_MIN_GAP = 38; // px: จุดชี้ที่ห่างกันน้อยกว่านี้บนจอจะถูกดันออกจากกัน
+// ระยะกล้องตั้งต้น (% ของระยะพอดีโมเดล): ถอยออกนิดให้ตู้ไม่ถูกปุ่มด้านบน/แผงควบคุมด้านล่างบัง (ตู้สูง จึงดูจากความสูงของกรอบ)
+const baseZoom = (el) => (el && el.clientHeight < 700 ? 125 : 112);
+// เล็งกล้องต่ำกว่ากลางตู้เล็กน้อย ตู้จะขยับขึ้นไปอยู่ในที่ว่าง (แผงควบคุมด้านล่างสูงกว่าปุ่มด้านบน)
+const baseTarget = (el) => {
+  const c = el.getBoundingBoxCenter();
+  return `${c.x}m ${c.y - el.getDimensions().y * 0.14}m ${c.z}m`;
+};
 
 // โมเดลบีบอัดด้วย Draco (scripts/optimize-model.mjs) ตัวถอดรหัสเก็บไว้ในเว็บเอง ไม่ต้องโหลดจาก gstatic
 // (model-viewer อ่านค่านี้จาก self.ModelViewerElement ตอนสร้าง element ทุกครั้ง)
@@ -71,6 +78,7 @@ export default function ModelViewer({ tall = false, poster = true, onReady }) {
       walls.current = (el.model?.materials || [])
         .filter((m) => XRAY_MATERIALS.includes(m.name))
         .map((m) => ({ m, color: [...m.pbrMetallicRoughness.baseColorFactor] }));
+      el.cameraTarget = baseTarget(el);
       setReady(true);
       onReady?.();
     };
@@ -121,6 +129,19 @@ export default function ModelViewer({ tall = false, poster = true, onReady }) {
             b.dx += ux * push;
             b.dy += uy * push;
           }
+      // ไม่ดันจุดเข้าไปใต้ปุ่มด้านบน / แผงควบคุมด้านล่าง (กดไม่ได้)
+      const box = el.getBoundingClientRect();
+      const topBar = el.parentElement.querySelector('.viewer-top')?.getBoundingClientRect();
+      const panel = el.parentElement.querySelector('.viewer-controls')?.getBoundingClientRect();
+      const minY = (topBar ? topBar.bottom : box.top) + 22;
+      const maxY = (panel ? panel.top : box.bottom) - 22;
+      const clamp = (v, lo, hi) => (lo > hi ? v : Math.min(hi, Math.max(lo, v)));
+      for (const p of vis) {
+        const y = p.y + p.dy;
+        // ถ้าตำแหน่งจริงอยู่ในที่ว่างอยู่แล้ว อย่าดันออกไปนอกที่ว่าง
+        if (p.y >= minY && p.y <= maxY) p.dy = clamp(y, minY, maxY) - p.y;
+        p.dx = clamp(p.x + p.dx, box.left + 22, box.right - 22) - p.x;
+      }
       for (const p of vis) {
         p.btn.dataset.shift = `${p.dx.toFixed(1)},${p.dy.toFixed(1)}`;
         p.btn.style.setProperty('--hs-shift', `${p.dx.toFixed(1)}px, ${p.dy.toFixed(1)}px`);
@@ -157,7 +178,7 @@ export default function ModelViewer({ tall = false, poster = true, onReady }) {
     for (const id of PART_IDS) el.updateHotspot({ name: `hotspot-${id}`, position: vec(partPos(id, explode)) });
     if (!flow && !selected) {
       const { theta, phi } = el.getCameraOrbit();
-      el.cameraOrbit = `${theta}rad ${phi}rad ${100 + 75 * explode}%`; // ถอยกล้องออกให้เห็นชิ้นส่วนที่แยกครบ
+      el.cameraOrbit = `${theta}rad ${phi}rad ${baseZoom(el) + 75 * explode}%`; // ถอยกล้องออกให้เห็นชิ้นส่วนที่แยกครบ
     }
   }, [explode, duration]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -193,8 +214,8 @@ export default function ModelViewer({ tall = false, poster = true, onReady }) {
   function resetCamera() {
     const el = ref.current;
     if (!el) return;
-    el.cameraTarget = 'auto auto auto';
-    el.cameraOrbit = '-35deg 75deg auto';
+    el.cameraTarget = baseTarget(el);
+    el.cameraOrbit = `-35deg 75deg ${baseZoom(el)}%`;
   }
 
   // ---------------- กดจุดชี้ชิ้นส่วน
