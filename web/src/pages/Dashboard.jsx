@@ -106,11 +106,12 @@ export default function Dashboard() {
         </div>
         {showSeed && <p className="tag warn">{t('มีข้อมูลจำลองรวมอยู่ด้วย (ต้นแบบสำหรับนำเสนอ)', 'Includes sample data (presentation prototype)')}</p>}
 
-        <div className="grid4">
+        <div className="stats-grid">
           <Stat label={t('เศษพืชที่ไม่ถูกเผา', 'Residue not burned')} value={kg(savedKg)} sub={t(`${jobs.length} ครั้งที่แปรรูป`, `${jobs.length} runs`)} />
           <Stat label={t('ลดฝุ่น PM2.5 (ประมาณ)', 'PM2.5 avoided (est.)')} value={kg(sum((j) => j.pm25g) / 1000)} sub={t('ค่าประมาณ ต้องอ้างอิงงานวิจัย', 'Estimate — needs a cited source')} />
           <Stat label={t('รายได้ที่จ่ายให้เกษตรกร', 'Paid to farmers')} value={thb(paid)} sub={t(`${farmers} ครัวเรือน`, `${farmers} households`)} />
           <Stat label={t('รายได้คนขับในชุมชน', 'Earned by local drivers')} value={thb(sum((j) => j.driverEarn || 0))} sub={t(`${jobs.filter((j) => j.pickupFee).length} เที่ยวรับของถึงไร่`, `${jobs.filter((j) => j.pickupFee).length} farm pickups`)} />
+          <Stat label={t.k('dash.fund')} value={thb(sum((j) => j.pickupSubsidy || 0))} sub={t.k('dash.fundSub', { n: jobs.filter((j) => j.pickupSubsidy > 0).length })} />
         </div>
 
         <div className="grid2">

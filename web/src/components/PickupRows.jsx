@@ -1,5 +1,5 @@
 // แถวค่ารถในใบเสนอราคา: ค่ารถตามสูตร / กองทุนช่วยจ่ายค่ารถ / ส่วนที่เกษตรกรจ่าย (ใช้ทั้งหน้าราคาและหน้าเกษตรกร)
-import { PICKUP } from '../../shared/rules.js';
+import { PICKUP, PICKUP_VEHICLES, VEHICLES } from '../../shared/rules.js';
 import { thb } from '../lib/client.js';
 import { useT } from '../lib/i18n.jsx';
 
@@ -54,5 +54,40 @@ export function PickupNotes({ q }) {
         </p>
       )}
     </>
+  );
+}
+
+/** เลือกรถ + ของเต็มคันรถ + เตือนน้ำหนักไม่ถึงขั้นต่ำ + คำแนะนำฟาง (ใช้ทั้งเครื่องคิดเงินและฟอร์มแจ้งขาย) */
+export function PickupLoad({ kg, vehicle, fullLoad, onChange }) {
+  const t = useT();
+  const under = Number(kg) > 0 && Number(kg) < PICKUP.minKg;
+  return (
+    <div className="pickup-load">
+      <fieldset>
+        <legend>{t.k('pickup.vehicle')}</legend>
+        <div className="choice">
+          {PICKUP_VEHICLES.map((v) => (
+            <button type="button" key={v} className={vehicle === v ? 'on' : ''} aria-pressed={vehicle === v} onClick={() => onChange({ vehicle: v })}>
+              {v === 'etan' ? '🚜' : '🛻'} {t.pick(VEHICLES[v])}
+              <small>
+                ~{VEHICLES[v].capacityKg} {t('กก.', 'kg')}
+              </small>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <p className="hint">{t.k('pickup.minRule', { min: PICKUP.minKg })}</p>
+      {under && (
+        <label className="check">
+          <input type="checkbox" checked={fullLoad} onChange={(e) => onChange({ fullLoad: e.target.checked })} /> {t.k('pickup.fullLoad', { min: PICKUP.minKg })}
+        </label>
+      )}
+      {under && !fullLoad && (
+        <p className="cap-warning" role="alert">
+          ⚠️ {t.k('pickup.underMin', { min: PICKUP.minKg })}
+        </p>
+      )}
+      <p className="hint">💡 {t.k('pickup.strawTip')}</p>
+    </div>
   );
 }

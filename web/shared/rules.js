@@ -24,9 +24,9 @@ export const residueName = (k) => RESIDUES[k]?.th || k;
 
 export const PURPOSES = {
   sell: 'ขายให้ไร่ไม่เผา (ได้เงิน)',
-  self: 'แปรรูปแล้วรับกลับไปใช้เอง (จ่ายค่าบริการ)',
+  self: 'แปรรูปแล้วรับกลับไปใช้เองหรือขายเอง (จ่ายค่าบริการ)',
 };
-export const PURPOSES_EN = { sell: 'Sell to Rai Mai Phao (get paid)', self: 'Process & take it home (pay a service fee)' };
+export const PURPOSES_EN = { sell: 'Sell to Rai Mai Phao (get paid)', self: 'Process & take it home to use or sell yourself (pay a service fee)' };
 
 // ค่าบริการแปรรูปเมื่อรับกลับไปใช้เอง (บาท/กก.)
 export const SERVICE_FEE = { pellet: 1.2, briquette: 1.5, chop: 0.4 };
@@ -51,14 +51,21 @@ export const PICKUP = {
   perKg: 0.1, // บาท/กก.
   driverShare: 0.9, // คนขับได้ 90% ที่เหลือเป็นค่าแพลตฟอร์ม
   maxKm: 10,
-  capShare: 0.3, // เกษตรกรจ่ายค่ารถไม่เกิน 30% ของยอดขาย ส่วนเกินกองทุนอุดหนุนค่ารถช่วยจ่าย (คนขับยังได้ค่ารถเต็ม)
+  capShare: 0.3, // ขายให้บริษัท: เกษตรกรจ่ายค่ารถไม่เกิน 30% ของยอดขาย ส่วนเกินกองทุนอุดหนุนค่ารถช่วยจ่าย (คนขับยังได้ค่ารถเต็ม)
+  //               รับกลับไปใช้เอง/ขายเอง: จ่ายค่ารถเต็ม ไม่มีเพดาน (ค่ารถเป็นต้นทุนรับซื้อวัตถุดิบของบริษัทเท่านั้น)
+  minKg: 300, // เรียกรถได้เมื่อ ≥ 300 กก. หรือของเต็มคันรถ
   roadFactor: 1.3, // ระยะถนน ≈ ระยะเส้นตรง × 1.3
 };
 export const VEHICLES = {
-  pickup: { th: 'รถกระบะ', en: 'Pickup truck', capacityKg: 800 },
+  pickup: { th: 'รถกระบะติดคอก', en: 'Pickup truck with cage', capacityKg: 800 },
   etan: { th: 'รถอีแต๋น / รถไถเดินตามพ่วง', en: 'Farm tractor with trailer', capacityKg: 1000 },
   moto: { th: 'มอเตอร์ไซค์พ่วงข้าง', en: 'Motorcycle with sidecar', capacityKg: 150 },
 };
+
+// รถที่เกษตรกรเลือกเรียกได้
+export const PICKUP_VEHICLES = ['pickup', 'etan'];
+/** เรียกรถได้ไหม: น้ำหนัก ≥ 300 กก. หรือของเต็มคันรถ (ฟางกองหลวมเบาแต่กินที่) */
+export const pickupAllowed = (kg, fullLoad = false) => Number(kg) >= PICKUP.minKg || Boolean(fullLoad);
 
 // ที่ตั้งตู้ต้นแบบ (สมมติ: ลานตากชุมชน อ.แม่จัน เชียงราย)
 export const MACHINE = { id: 'RMP-01', th: 'ลานตากชุมชนบ้านห้วยไคร้', en: 'Huai Khrai community drying yard', lat: 20.146, lng: 99.852 };

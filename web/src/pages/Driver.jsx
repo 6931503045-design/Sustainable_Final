@@ -191,6 +191,8 @@ export default function Driver() {
                     </div>
                     <p>
                       {t.pick(RESIDUES[p.residue])} · {kg(p.estKg)}
+                      {p.fullLoad && ` (${t.k('pickup.fullLoadShort')})`}
+                      {p.vehicle && VEHICLES[p.vehicle] && ` · 🛻 ${t.pick(VEHICLES[p.vehicle])}`}
                       <br />
                       {p.fromYouKm != null && (
                         <>
