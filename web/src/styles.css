@@ -370,3 +370,12 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ใบเสนอราคา: ค่ารถเกินเพดาน กองทุนช่วยจ่าย */
+.quote .muted-row { color: var(--muted); }
+.quote .fund-row { color: var(--green); font-weight: 600; }
+.quote .driver-row { display: block; margin-top: 6px; }
+.cap-warning { margin: 8px 0 4px; padding: 8px 12px; border-radius: 10px; background: var(--cream); border: 1px solid #f1d9ad; color: #7a4b00; font-size: .88rem; line-height: 1.5; }
+.quote .row { gap: 12px; }
+.quote .row > :last-child { white-space: nowrap; flex: none; }
+.nowrap { white-space: nowrap; }

@@ -305,7 +305,8 @@ export default function Kiosk() {
           </div>
           {result.job.pickupFee > 0 && (
             <p>
-              {t('หักค่ารถ', 'Pickup fee')} {thb(result.job.pickupFee)} · {t('คนขับ', 'driver')} {result.job.driverName} {t('ได้', 'earns')} {thb(result.job.driverEarn)}
+              {t('หักค่ารถ', 'Pickup fee')} {thb(result.job.pickupFee)}
+              {result.job.pickupSubsidy > 0 && ` (${t.k('price.fund')} ${thb(result.job.pickupSubsidy)})`} · {t('คนขับ', 'driver')} {result.job.driverName} {t('ได้', 'earns')} {thb(result.job.driverEarn)}
             </p>
           )}
           <p className="good">

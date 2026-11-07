@@ -154,6 +154,7 @@ export default function Present() {
           {t('เกษตรกรได้', 'farmer gets')} {thb(example.amount)}
         </b>{' '}
         · {t('คนขับได้', 'driver gets')} {thb(example.driverEarn)}
+        {example.pickupSubsidy > 0 && ` · ${t.k('price.fund')} ${thb(example.pickupSubsidy)}`}
       </p>
       <p className="center-text">
         <Link to="/prices" className="btn">

@@ -127,20 +127,24 @@ test('แจ้งช่างผ่าน LINE', async () => {
 });
 
 test('กติกาธุรกิจ', () => {
-  assert.deepEqual(settle({ mode: 'chop', purpose: 'self', inputKg: 100, outputKg: 95 }), { gross: -40, pickupFee: 0, pickupCapped: false, driverEarn: 0, amount: -40, savedKg: 100, pm25g: 800, yieldPct: 95 });
-  // ขายซังข้าวโพด 200 กก. ห่าง 6 กม.: ค่ารถตามสูตร 50+60+20 = 130 แต่เพดาน 30% ของ 200 = 60 → สุทธิ 140
+  assert.deepEqual(settle({ mode: 'chop', purpose: 'self', inputKg: 100, outputKg: 95 }), { gross: -40, pickupFee: 0, pickupFull: 0, pickupSubsidy: 0, pickupCapped: false, driverEarn: 0, amount: -40, savedKg: 100, pm25g: 800, yieldPct: 95 });
+  // ขายซังข้าวโพด 200 กก. ห่าง 6 กม.: ค่ารถตามสูตร 130, เกษตรกรจ่าย 60 (เพดาน 30%), กองทุนช่วย 70, สุทธิ 140, คนขับได้ 117
   const s2 = settle({ residue: 'corn', purpose: 'sell', inputKg: 200, pickupKm: 6 });
   assert.equal(s2.gross, 200);
+  assert.equal(s2.pickupFull, 130);
   assert.equal(s2.pickupFee, 60);
+  assert.equal(s2.pickupSubsidy, 70);
   assert.equal(s2.pickupCapped, true);
-  assert.equal(s2.driverEarn, 54);
   assert.equal(s2.amount, 140);
+  assert.equal(s2.driverEarn, 117);
   // ขายฟาง 1,000 กก. ชื้น 17% (ลด 10%) ห่าง 2 กม.: 1000×1.0×0.9 = 900, ค่ารถ 50+20+100 = 170 (ไม่ถึงเพดาน 270)
   const s3 = settle({ residue: 'rice_straw', purpose: 'sell', inputKg: 1000, moisture: 17, pickupKm: 2 });
   assert.equal(s3.gross, 900);
   assert.equal(s3.pickupFee, 170);
   assert.equal(s3.pickupCapped, false);
+  assert.equal(s3.pickupSubsidy, 0);
   assert.equal(s3.amount, 730);
+  assert.equal(s3.driverEarn, 153);
   assert.equal(needsFlush({ mode: 'briquette' }, { mode: 'pellet', pelletType: 'feed' }), true);
   assert.equal(needsFlush({ mode: 'pellet', pelletType: 'feed' }, { mode: 'pellet', pelletType: 'fuel' }), false);
   assert.equal(maskName('สมชาย ใจดี'), 'สมชาย ใ.');

@@ -4,6 +4,7 @@ import { Link, Nav } from '../App.jsx';
 import QR from '../components/QR.jsx';
 import PriceBoard from '../components/PriceBoard.jsx';
 import DemoNotice from '../components/DemoNotice.jsx';
+import { PickupNotes, PickupRows } from '../components/PickupRows.jsx';
 import { MACHINE, MODES, PICKUP, PURPOSES, PURPOSES_EN, RESIDUES, distanceKm, settle } from '../../shared/rules.js';
 import { api, kg, local, thb, when } from '../lib/client.js';
 import { LangToggle, useT } from '../lib/i18n.jsx';
@@ -69,19 +70,12 @@ function Quote({ q, pickup, km }) {
         <span>{q.gross >= 0 ? t('ค่าเศษพืช (ราคาเต็ม)', 'Residue value (full price)') : t('ค่าบริการแปรรูป', 'Processing fee')}</span>
         <b>{thb(Math.abs(q.gross))}</b>
       </div>
-      {pickup && (
-        <div className="row between">
-          <span>
-            {t('ค่ารถรับถึงที่', 'Pickup fee')} ({km} {t('กม.', 'km')})
-            {q.pickupCapped && <small className="hint"> · {t(`เพดาน ${Math.round(PICKUP.capShare * 100)}% ของยอดขาย`, `capped at ${Math.round(PICKUP.capShare * 100)}% of the sale`)}</small>}
-          </span>
-          <b>− {thb(q.pickupFee)}</b>
-        </div>
-      )}
+      {pickup && <PickupRows q={q} km={km} />}
       <div className="row between total">
         <span>{q.amount >= 0 ? t('คาดว่าจะได้รับ', 'Estimated payout') : t('คาดว่าต้องจ่าย', 'Estimated cost')}</span>
         <b>{thb(Math.abs(q.amount))}</b>
       </div>
+      {pickup && <PickupNotes q={q} />}
       <small className="hint">{t('ยอดจริงคิดจากน้ำหนักที่ชั่งและความชื้นที่ตู้', 'Final amount uses the weight and moisture measured at the machine')}</small>
     </div>
   );

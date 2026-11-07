@@ -12,6 +12,18 @@ const row = (label, value, bold = false, color) => ({
     { type: 'text', text: String(value), size: 'sm', align: 'end', flex: 6, wrap: true, weight: bold ? 'bold' : 'regular', ...(color ? { color } : {}) },
   ],
 });
+
+// แถวค่ารถ: ถ้าเกินเพดาน 30% แสดงค่ารถตามสูตร / กองทุนช่วยจ่ายค่ารถ / ส่วนที่เกษตรกรจ่าย
+function pickupRows(q, km, driverName) {
+  const label = `ค่ารถ${km != null ? ` (${km} กม.)` : ''}${driverName ? ` · ${driverName}` : ''}`;
+  if (!q.pickupSubsidy) return [row(label, `- ${baht(q.pickupFee)}`)];
+  return [
+    row(`${label.replace('ค่ารถ', 'ค่ารถตามสูตร')}`, baht(q.pickupFull)),
+    row('กองทุนช่วยจ่ายค่ารถ', baht(q.pickupSubsidy), false, GREEN),
+    row('ค่ารถส่วนที่คุณจ่าย', `- ${baht(q.pickupFee)}`),
+  ];
+}
+
 const sep = { type: 'separator', margin: 'md' };
 const note = (text) => ({ type: 'text', text, size: 'xxs', color: '#9ca3af', wrap: true, margin: 'md' });
 
@@ -57,6 +69,7 @@ export function priceMessage() {
         sep,
         { type: 'text', text: '🛻 เรียกรถไปรับถึงไร่', weight: 'bold', size: 'sm', margin: 'md' },
         { type: 'text', text: `ค่าเรียก ${PICKUP.base} ฿ + ${PICKUP.perKm} ฿/กม. (รวมไปกลับ) + ${PICKUP.perKg} ฿/กก. หักจากยอดขาย ไม่เกิน ${Math.round(PICKUP.capShare * 100)}% ของยอดขาย · รัศมี ${PICKUP.maxKm} กม.`, size: 'xs', wrap: true },
+        { type: 'text', text: 'ส่วนที่เกินเพดาน กองทุนอุดหนุนค่ารถช่วยจ่าย คนขับยังได้ค่ารถเต็ม', size: 'xs', wrap: true, color: '#888888' },
       ],
     },
     footer: footer(liffButton('คำนวณราคา / แจ้งขาย', '?tab=price')),
@@ -84,7 +97,8 @@ export function lotMessage(lot, qrUrl, quote) {
           ? [
               sep,
               row(lot.purpose === 'sell' ? 'ค่าเศษพืช (ประมาณ)' : 'ค่าบริการ (ประมาณ)', baht(Math.abs(quote.gross))),
-              ...(pickup ? [row(`ค่ารถ (${lot.distanceKm} กม.)`, `- ${baht(quote.pickupFee)}`)] : []),
+              ...(pickup ? pickupRows(quote, lot.distanceKm) : []),
+              ...(pickup && quote.pickupCapped ? [note(`⚠️ ค่ารถเกิน ${Math.round(PICKUP.capShare * 100)}% ของยอดขาย กองทุนช่วยจ่ายส่วนต่าง แนะนำให้รวมเที่ยวกับไร่ใกล้เคียง หรือขนมาเอง`)] : []),
               row(quote.amount >= 0 ? 'คาดว่าจะได้รับ' : 'คาดว่าต้องจ่าย', baht(Math.abs(quote.amount)), true, GREEN),
               note('ยอดจริงคิดจากน้ำหนักที่ชั่งและความชื้นที่ตู้'),
             ]
@@ -114,7 +128,7 @@ export function receiptMessage(job, heroUrl) {
         row('ความชื้น', `${job.moisture}%`),
         sep,
         row(job.purpose === 'sell' ? `ค่าเศษพืช (${RESIDUES[job.residue]?.buy} ฿/กก.)` : 'ค่าบริการแปรรูป', baht(Math.abs(job.gross))),
-        ...(job.pickupFee ? [row(`ค่ารถรับของ${job.driverName ? ` (${job.driverName})` : ''}`, `- ${baht(job.pickupFee)}`)] : []),
+        ...(job.pickupFee ? pickupRows(job, job.distanceKm, job.driverName) : []),
         row(paid ? 'ยอดสุทธิที่ได้รับ' : 'ยอดที่ต้องชำระ', baht(Math.abs(job.amount)), true, paid ? GREEN : '#b45309'),
         {
           type: 'box',

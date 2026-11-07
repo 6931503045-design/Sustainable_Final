@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { MODES, MOISTURE_MAX, MOISTURE_REJECT, MOISTURE_TIERS, PICKUP, RESIDUES, SERVICE_FEE, settle } from '../../shared/rules.js';
 import { thb } from '../lib/client.js';
+import { PickupNotes, PickupRows } from './PickupRows.jsx';
 import { useT } from '../lib/i18n.jsx';
 
 export default function PriceBoard({ onSell }) {
@@ -37,10 +38,12 @@ export default function PriceBoard({ onSell }) {
         <p>
           {t('ค่าเรียกรถ', 'Call-out')} {PICKUP.base} ฿ + {PICKUP.perKm} ฿/{t('กม. (รวมไปกลับ)', 'km (round trip included)')} + {PICKUP.perKg} ฿/{unit} {t('หักจากยอดขาย', 'deducted from the sale')} ({t('รัศมี', 'within')} {PICKUP.maxKm} {t('กม.', 'km')})
           <br />
-          <b>{t(`ค่ารถไม่เกิน ${Math.round(PICKUP.capShare * 100)}% ของยอดขาย`, `Pickup fee capped at ${Math.round(PICKUP.capShare * 100)}% of the sale`)}</b>
+          <b>{t.k('price.capRule', { cap: Math.round(PICKUP.capShare * 100) })}</b>
+          <br />
+          {t.k('price.fundNote')}
           <br />
           <small className="hint">
-            {t(`คนขับในพื้นที่ได้ ${Math.round(PICKUP.driverShare * 100)}% ส่วนที่เหลือเป็นค่าดูแลระบบ`, `Local drivers keep ${Math.round(PICKUP.driverShare * 100)}%; the rest is the platform fee`)}
+            {t(`คนขับในพื้นที่ได้ ${Math.round(PICKUP.driverShare * 100)}% ของค่ารถตามสูตร ส่วนที่เหลือเป็นค่าดูแลระบบ`, `Local drivers keep ${Math.round(PICKUP.driverShare * 100)}% of the full rate; the rest is the platform fee`)}
           </small>
         </p>
         <h3>{t('แปรรูปแล้วรับกลับไปใช้เอง (ค่าบริการ/กก.)', 'Process & take home (service fee per kg)')}</h3>
@@ -99,19 +102,12 @@ export default function PriceBoard({ onSell }) {
                 <span>{t('ค่าเศษพืช', 'Residue value')}</span>
                 <b>{thb(q.gross)}</b>
               </div>
-              {c.pickup && (
-                <div className="row between">
-                  <span>
-                    {t('ค่ารถ', 'Pickup fee')}
-                    {q.pickupCapped && <small className="hint"> ({t(`เพดาน ${Math.round(PICKUP.capShare * 100)}%`, `${Math.round(PICKUP.capShare * 100)}% cap`)})</small>}
-                  </span>
-                  <b>− {thb(q.pickupFee)}</b>
-                </div>
-              )}
+              {c.pickup && <PickupRows q={q} km={c.km} />}
               <div className="row between total">
                 <span>{t('ได้รับสุทธิ', 'Net payout')}</span>
                 <b>{thb(q.amount)}</b>
               </div>
+              {c.pickup && <PickupNotes q={q} />}
               <small className="hint">
                 🌱 {t('ลดการเผา', 'Burning avoided')} {c.kg} {unit} ≈ PM2.5 {q.pm25g} {t('กรัม (ค่าประมาณ)', 'g (estimate)')}
               </small>

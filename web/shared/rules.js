@@ -51,7 +51,7 @@ export const PICKUP = {
   perKg: 0.1, // บาท/กก.
   driverShare: 0.9, // คนขับได้ 90% ที่เหลือเป็นค่าแพลตฟอร์ม
   maxKm: 10,
-  capShare: 0.3, // ค่ารถไม่เกิน 30% ของยอดขาย (เกษตรกรเหลือเงินอย่างน้อย 70%)
+  capShare: 0.3, // เกษตรกรจ่ายค่ารถไม่เกิน 30% ของยอดขาย ส่วนเกินกองทุนอุดหนุนค่ารถช่วยจ่าย (คนขับยังได้ค่ารถเต็ม)
   roadFactor: 1.3, // ระยะถนน ≈ ระยะเส้นตรง × 1.3
 };
 export const VEHICLES = {
@@ -78,12 +78,17 @@ export function distanceKm(a, b = MACHINE) {
   return round(2 * R * Math.asin(Math.sqrt(h)) * PICKUP.roadFactor, 1);
 }
 
-/** ค่ารถ = ค่าเรียก + ต่อกม. + ต่อกก. ถ้าเป็นการขาย (sale > 0) ไม่เกิน 30% ของยอดขาย */
+/**
+ * ค่ารถตามสูตร (full) = ค่าเรียก + ต่อกม. + ต่อกก.
+ * เกษตรกรจ่าย (fee) ไม่เกิน 30% ของยอดขาย ส่วนต่าง (subsidy) กองทุนอุดหนุนค่ารถจ่าย
+ * คนขับได้ 90% ของค่ารถตามสูตรเสมอ ที่เหลือเป็นค่าแพลตฟอร์ม
+ */
 export function pickupFee(km, kg, sale = 0) {
   const full = Math.round(PICKUP.base + km * PICKUP.perKm + kg * PICKUP.perKg);
   const cap = sale > 0 ? Math.floor(sale * PICKUP.capShare) : Infinity;
   const fee = Math.min(full, cap);
-  return { fee, full, capped: fee < full, driver: round(fee * PICKUP.driverShare, 2), platform: round(fee * (1 - PICKUP.driverShare), 2) };
+  const driver = round(full * PICKUP.driverShare, 2);
+  return { fee, full, subsidy: full - fee, capped: fee < full, driver, platform: round(full - driver, 2) };
 }
 
 /**
@@ -95,7 +100,9 @@ export function settle({ residue, mode, purpose, inputKg, outputKg, moisture = 0
   const pick = pickupKm == null ? null : pickupFee(pickupKm, inputKg, purpose === 'sell' ? gross : 0);
   return {
     gross: round(gross, 2),
-    pickupFee: pick ? pick.fee : 0,
+    pickupFee: pick ? pick.fee : 0, // ส่วนที่เกษตรกรจ่าย (หักจากยอด)
+    pickupFull: pick ? pick.full : 0, // ค่ารถตามสูตร
+    pickupSubsidy: pick ? pick.subsidy : 0, // กองทุนช่วยจ่ายค่ารถ
     pickupCapped: pick ? pick.capped : false,
     driverEarn: pick ? pick.driver : 0,
     amount: round(gross - (pick ? pick.fee : 0), 2),
