@@ -124,6 +124,64 @@ for cap, im in pieces:
         newpage(im.width > A3W - 2 * M); P = pages[-1]; pg, d = P[0], P[1]
         pg.paste(im, (M, 60)); d.text((M, 60 + im.height + 1), cap, font=FONT_S, fill=(120, 120, 120))
         P[2], P[3], P[4] = M + im.width + GAP, 60, h
+
+# ---- ลูกศร วงเล็บ แถบไล่สี (วาดใหม่ให้คม ขนาดเท่าบนบอร์ด) ลงแผ่นสุดท้าย ----
+K = 70 / 1587 * PXCM          # print px ต่อ page px ของ Canva
+def hexc(h): return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
+def box(img):
+    ImageDraw.Draw(img).rectangle((0, 0, img.width - 1, img.height - 1), outline=(60, 60, 60), width=2)
+    return img
+def arrow():
+    L, T = round(115.9 * K), round(12.69 * K)
+    hl, hw = round(T * 2.2), round(T * 2.6)
+    pad = 14
+    im = Image.new('RGB', (L + 2 * pad, hw + 2 * pad), 'white')
+    d = ImageDraw.Draw(im); c = hexc('#6e9048'); cy = pad + hw // 2
+    d.rectangle((pad, cy - T // 2, pad + L - hl, cy + T // 2), fill=c)
+    d.polygon([(pad + L - hl, pad), (pad + L, cy), (pad + L - hl, pad + hw)], fill=c)
+    return box(im)
+def bracket():
+    W8 = round(9.17 * K); pad = 14
+    x0, x1, xr = 189.5, 232.0, 316.0
+    y0, ym, y1 = 454.6, 703.5, 949.7
+    w = round((xr - x0) * K) + 2 * pad + W8; h = round((y1 - y0) * K) + 2 * pad + W8
+    im = Image.new('RGB', (w, h), 'white'); d = ImageDraw.Draw(im); c = hexc('#d5a34f')
+    X = lambda x: pad + round((x - x0) * K) + W8 // 2
+    Y = lambda y: pad + round((y - y0) * K) + W8 // 2
+    for xa, ya, xb, yb in ((x0, y0, x1, y0), (x0, y1, x1, y1), (x1, y0, x1, y1), (x0, ym, xr, ym)):
+        d.line((X(xa), Y(ya), X(xb), Y(yb)), fill=c, width=W8)
+    return box(im)
+def bar_halves(tag):
+    Lp, Tp = round(889.3 * K), round(31 * K)
+    a, b = np.array(hexc('#ffd476')), np.array(hexc('#7d9240'))
+    t = np.linspace(0, 1, Lp)[None, :, None]
+    g = (a + (b - a) * t).repeat(Tp, 0).astype('uint8')
+    full = Image.fromarray(g)
+    ov = round(0.5 * PXCM); mid = Lp // 2
+    out = []
+    for nm, (s0, s1) in (('ซ้าย', (0, mid + ov)), ('ขวา', (mid - ov, Lp))):
+        part = full.crop((s0, 0, s1, Tp))
+        im = Image.new('RGB', (part.width + 20, part.height + 20), 'white'); im.paste(part, (10, 10))
+        out.append((f'{tag} แถบสีท่อน{nm} (ทับกัน 1 ซม.)', box(im)))
+    return out
+P = pages[-1]
+pg, d = P[0], P[1]
+y = P[3] + P[4] + GAP
+def put(im, x, y, cap):
+    pg.paste(im, (x, y)); d.text((x, y + im.height + 1), cap, font=FONT_S, fill=(120, 120, 120))
+    return y + im.height + 26
+br = bracket().rotate(90, expand=True)
+y = put(br, M, y, 'บอร์ด 2 วงเล็บส้ม (หมุนกลับตั้งตรงตอนติด)')
+bars = bar_halves('บอร์ด 2') + bar_halves('บอร์ด 3')
+yb = y
+for cap, im in bars:
+    yb = put(im, M, yb, cap)
+xa = M + bars[0][1].width + 40
+ya = y
+for i in (1, 2, 3):
+    ya = put(arrow(), xa, ya, f'บอร์ด 2 ลูกศร {i}')
+assert max(yb, ya) <= pg.height - 55, ('overflow', max(yb, ya), pg.height)
+
 imgs = [p[0] for p in pages]
 imgs[0].save(OUT, save_all=True, append_images=imgs[1:], resolution=DPI)
 for i, p in enumerate(imgs):
