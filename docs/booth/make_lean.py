@@ -156,10 +156,23 @@ for t in (380.438483533511, 597.4527675492913, 814.4670515650716):
 for t, l in ((462.9228564819617, 769.7722045093832), (679.9371404977419, 770.5730252997091), (896.9514245135222, 770.5730252997089)):
     P.place(scaled(circ(p2, l * EXP, t * EXP, D), SC))
 P.place(scaled(rect(p3, (680, 2690, 1255, 3150)), SC), 'บอร์ด 3 รถกระบะ')
-P.place(scaled(rect(p3, (95, 2365, 1215, 2765)), SC), 'บอร์ด 3 ป้าย')
+P.place(scaled(rect(p3, (95, 2365, 1215, 2765)), SC * 0.8), 'บอร์ด 3 ป้าย')
 P.x, P.y, P.rh = M, P.y + P.rh + GAP, 0
 for im in left:
     P.place(im, '')
+# บอร์ด 1: รูปชาวนาเผาเศษพืช (มุมขวาล่าง)
+p1 = Image.open(f'{SRC}/p1.png').convert('RGB')
+fb = (round(701.1 * EXP), round(1257.6 * EXP), p1.width, min(p1.height, round(1504 * EXP)))
+fc = p1.crop(fb)
+fm = Image.fromarray(((np.abs(np.asarray(fc).astype(int) - np.array(bg)).sum(2) > 25) * 255).astype('uint8'))
+fm = fm.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.MaxFilter(15)).filter(ImageFilter.MinFilter(11))
+far = scaled(outlined(pad(fc), pad(fm), 11), SC)
+P.x, P.y, P.rh = M, P.y + P.rh + GAP, 0
+fit = min(1.0, (A3W - 2 * M) / far.width, (A3H - 55 - 30 - P.y) / far.height)
+if fit >= 0.6:
+    far = scaled(far, fit)
+if not P.place(far, f'บอร์ด 1 ชาวนาเผาเศษพืช ({fit*100:.0f}%)'):
+    P.new('บอร์ด 1 · รูปชาวนาเผาเศษพืช'); P.place(far, 'บอร์ด 1 ชาวนาเผาเศษพืช')
 
 # --- ภาพสถานี แนวนอน (ย่อให้พอดี A3) ---
 st = p3.crop((93, 672, 2831, 2201))
