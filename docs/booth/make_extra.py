@@ -67,7 +67,37 @@ sub = sub[max(0, ys.min() - 22):ys.max() + 22, max(0, xs.min() - 22):xs.max() + 
 stat = Image.fromarray(sub.astype('uint8'))
 stat = boxed(stat.resize((round(stat.width * SC), round(stat.height * SC)), Image.LANCZOS))
 
-logo = cutout(f'{IMG}/6.webp', 19.5)
+logo = cutout(f'{IMG}/6.webp', 18.0)
+
+# "Moisture meter" จากบอร์ด 2 (EN) ขนาดเท่าบนบอร์ด
+p2 = np.asarray(Image.open(f'{SRC_EN}/p2.png').convert('RGB')).astype(int)
+t, l, w, h = 1393.35, 722.63, 190, 53.8
+sub = p2[round((t - 4) * EXP):round((t + h + 4) * EXP), round((l - 4) * EXP):round((l + w + 4) * EXP)].copy()
+dark = sub.sum(2) < 300
+sub[~dark] = bg
+ys, xs = np.nonzero(dark)
+sub = sub[max(0, ys.min() - 22):ys.max() + 22, max(0, xs.min() - 22):xs.max() + 22]
+mm = Image.fromarray(sub.astype('uint8'))
+mm = boxed(mm.resize((round(mm.width * SC), round(mm.height * SC)), Image.LANCZOS))
+
+# ป้ายตั้งโต๊ะ "ลองขายเศษพืช" + QR (9 x 12.5 ซม.)
+SW, SH = round(9 * PXCM), round(12.5 * PXCM)
+G = (47, 122, 62)
+sign = Image.new('RGB', (SW, SH), 'white')
+sd = ImageDraw.Draw(sign)
+sd.rectangle((0, 0, SW - 1, SH - 1), outline=G, width=18)
+F1 = ImageFont.truetype('/usr/share/fonts/opentype/tlwg/Loma-Bold.otf', 58)
+F2 = ImageFont.truetype('/usr/share/fonts/opentype/tlwg/Loma.otf', 36)
+F3 = ImageFont.truetype('/usr/share/fonts/opentype/tlwg/Loma.otf', 27)
+def ctext(y, txt, f, fill):
+    w = sd.textlength(txt, font=f); sd.text(((SW - w) / 2, y), txt, font=f, fill=fill)
+ctext(48, 'ลองขายเศษพืช', F1, G)
+ctext(128, 'ผ่าน LINE ได้เลย', F2, (30, 36, 51))
+q = Image.open(f'{IMG}/4.png').convert('RGB')
+QS = round(6.3 * PXCM)
+sign.paste(q.resize((QS, QS), Image.NEAREST), ((SW - QS) // 2, 200))
+ctext(200 + QS + 18, 'เพิ่มเพื่อน · แจ้งขาย · เรียกรถ', F3, (95, 111, 100))
+qr = sign
 smoke = cutout(f'{IMG}/5.png', 16.5)
 tractor = cutout(f'{IMG}/7.png', 14.0)
 
@@ -85,9 +115,10 @@ def put(im, x, y, cap):
 
 y = 60
 yl = put(logo, M, y, f'โลโก้ Zero-Burn Farm (กว้าง {logo.width / PXCM:.1f} ซม.)')
-put(qr, M + logo.width + GAP, y, 'QR (7 ซม.)')
+put(qr, M + logo.width + GAP, y, 'ป้ายตั้งโต๊ะ QR (9 × 12.5 ซม.)')
 y2 = put(smoke, M, yl, f'ภาพเผาเศษพืช ฝุ่น PM2.5 (กว้าง {smoke.width / PXCM:.1f} ซม.)')
-put(stat, M + smoke.width + GAP, yl + 40, 'บอร์ด 1 · 0.63 M rai (ขนาดเท่าบนบอร์ด)')
+ys_ = put(stat, M + smoke.width + GAP, yl + 40, 'บอร์ด 1 · 0.63 M rai (ขนาดเท่าบนบอร์ด)')
+put(mm, M + smoke.width + GAP, ys_, 'บอร์ด 2 · Moisture meter (ขนาดเท่าบนบอร์ด)')
 used = put(tractor, M, y2, f'รถแทรกเตอร์ (กว้าง {tractor.width / PXCM:.1f} ซม.)')
 assert used <= A3H - 50, used / PXCM
 print("w", (M + smoke.width + GAP + stat.width)/PXCM, (M + logo.width + GAP + qr.width)/PXCM, A3W/PXCM)
