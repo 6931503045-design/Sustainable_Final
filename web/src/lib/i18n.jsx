@@ -1,10 +1,10 @@
 // สลับภาษาไทย/อังกฤษทั้งเว็บ: const t = useT(); t('ไทย', 'English')
 // ข้อมูลใน shared/rules.js ที่มีทั้ง th/en ใช้ t.pick(obj)
 import { useSyncExternalStore } from 'react';
-import { local, setFormatLang } from './client.js';
+import { DEFAULT_LANG, local, setFormatLang } from './client.js';
 
 const listeners = new Set();
-let lang = local.get('lang', 'th');
+let lang = local.get('lang', DEFAULT_LANG);
 if (typeof document !== 'undefined') document.documentElement.lang = lang;
 
 export function setLang(next) {
