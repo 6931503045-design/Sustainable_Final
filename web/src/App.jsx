@@ -12,9 +12,11 @@ const Driver = lazy(() => import('./pages/Driver.jsx'));
 const Prices = lazy(() => import('./pages/Prices.jsx'));
 const Present = lazy(() => import('./pages/Present.jsx'));
 const Booth = lazy(() => import('./pages/Booth.jsx'));
+const IpadBmc = lazy(() => import('./pages/IpadBmc.jsx'));
+const Ipad3D = lazy(() => import('./pages/Ipad3D.jsx'));
 
 // LIFF เปิด liff.line.me/<id>/driver → <endpoint>/liff/driver
-const ROUTES = { '/': Home, '/liff': Farmer, '/liff/driver': Driver, '/driver': Driver, '/prices': Prices, '/present': Present, '/booth': Booth, '/kiosk': Kiosk, '/dashboard': Dashboard, '/privacy': Privacy };
+const ROUTES = { '/': Home, '/liff': Farmer, '/liff/driver': Driver, '/driver': Driver, '/prices': Prices, '/present': Present, '/booth': Booth, '/kiosk': Kiosk, '/dashboard': Dashboard, '/privacy': Privacy, '/ipad/bmc': IpadBmc, '/ipad/3d': Ipad3D };
 
 export function go(path) {
   window.history.pushState({}, '', path);

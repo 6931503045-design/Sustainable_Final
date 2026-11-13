@@ -2,6 +2,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link } from '../App.jsx';
 import QR from '../components/QR.jsx';
+import BMC from '../components/BMC.jsx';
 import { MODES, PICKUP, RESIDUES, settle } from '../../shared/rules.js';
 import { api, kg, local, thb } from '../lib/client.js';
 import { LangToggle, useT } from '../lib/i18n.jsx';
@@ -214,24 +215,7 @@ export default function Present() {
 
     <Slide key="bmc">
       <h2>Business Model Canvas</h2>
-      <div className="bmc">
-        {[
-          ['kp', t('พันธมิตรหลัก', 'Key partners'), t('วิสาหกิจชุมชน · อบต./ผู้ใหญ่บ้าน · มฟล. · ฟาร์มเห็ด สหกรณ์โคนม โรงอบลำไย · คนขับในพื้นที่', 'Community enterprises · local government · MFU · mushroom farms, dairy co-ops, longan dryers · local drivers')],
-          ['ka', t('กิจกรรมหลัก', 'Key activities'), t('รับซื้อ แปรรูป ขาย · ดูแลแพลตฟอร์ม LINE · บำรุงรักษาตู้', 'Buy, process, sell · run the LINE platform · maintain machines')],
-          ['kr', t('ทรัพยากรหลัก', 'Key resources'), t('ตู้ 3 in 1 · ระบบ LINE + ข้อมูล · เครือข่ายคนขับ · แบรนด์ "ไร่ไม่เผา"', '3-in-1 machine · LINE system + data · driver network · brand')],
-          ['vp', t('คุณค่าที่ส่งมอบ', 'Value propositions'), t('เกษตรกร: เศษพืชมีราคา ไม่ต้องเผา รถไปรับถึงไร่ · ผู้ซื้อ: วัตถุดิบสม่ำเสมอ ตรวจสอบได้ · ชุมชน: อากาศสะอาด', 'Farmers: residue earns money, pickup at the farm · Buyers: consistent, traceable supply · Community: clean air')],
-          ['cr', t('ความสัมพันธ์กับลูกค้า', 'Customer relationships'), t('LINE OA · ใบรับของโปร่งใส · Dashboard สาธารณะ', 'LINE OA · transparent receipts · public dashboard')],
-          ['ch', t('ช่องทาง', 'Channels'), t('LINE OA + ริชเมนู · ลานตากชุมชน · ผู้ใหญ่บ้าน/อบต.', 'LINE OA + rich menu · community drying yard · village leaders')],
-          ['cs', t('กลุ่มลูกค้า', 'Customer segments'), t('เกษตรกรผู้ขายเศษพืช · ผู้รับซื้อสินค้า 6 แบบ · คนขับ (ผู้ให้บริการ)', 'Farmers selling residue · buyers of 6 products · drivers (service providers)')],
-          ['cost', t('โครงสร้างต้นทุน', 'Cost structure'), t('ตู้และติดตั้ง · ไฟฟ้า (+โซลาร์) · ค่ารับซื้อวัตถุดิบ · ซ่อมบำรุง · แรงงาน', 'Machine & install · electricity (+solar) · residue purchases · maintenance · labour')],
-          ['rev', t('รายได้', 'Revenue streams'), t('ขายสินค้า 6 แบบ · ค่าบริการแปรรูป · ค่าแพลตฟอร์ม 10% จากค่ารถ', 'Sales of 6 products · processing fees · 10% platform fee on pickups')],
-        ].map(([k, h, body]) => (
-          <div key={k} className={`bmc-${k}`}>
-            <b>{h}</b>
-            <p>{body}</p>
-          </div>
-        ))}
-      </div>
+      <BMC />
     </Slide>,
 
     <Slide key="course">

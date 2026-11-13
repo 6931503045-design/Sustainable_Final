@@ -37,7 +37,9 @@ export const local = {
 };
 
 // รูปแบบตัวเลข/วันที่ตามภาษาที่เลือก (i18n.jsx เรียก setFormatLang เมื่อสลับภาษา)
-let fmtLang = local.get('lang', 'th');
+// ภาษาหลักของงาน Expo คืออังกฤษ ยกเว้นหน้า LIFF ของเกษตรกร/คนขับใน LINE ที่เริ่มเป็นไทย
+export const DEFAULT_LANG = typeof window !== 'undefined' && window.location.pathname.startsWith('/liff') ? 'th' : 'en';
+let fmtLang = local.get('lang', DEFAULT_LANG);
 export const setFormatLang = (l) => (fmtLang = l);
 const loc = () => (fmtLang === 'en' ? 'en-GB' : 'th-TH');
 export const thb = (n) => `${Number(n).toLocaleString(loc(), { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ฿`;
