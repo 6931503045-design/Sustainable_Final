@@ -384,3 +384,23 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 .stats-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 .pickup-load fieldset { margin-bottom: 8px; }
 .pickup-load .choice small { font-weight: 400; }
+
+/* ---------- หน้า iPad ที่บูธ (/ipad/bmc, /ipad/3d) ---------- */
+.ipad { height: 100vh; height: 100dvh; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0); }
+.ipad-bar { display: flex; align-items: center; gap: 16px; padding: 10px 18px; }
+.ipad-bar .brand { font-weight: 700; color: var(--green); font-size: 1.1rem; white-space: nowrap; }
+.ipad-bar h1 { flex: 1; margin: 0; font-size: clamp(1.1rem, 2.4vw, 1.7rem); text-align: center; }
+.ipad-bmc .bmc { flex: 1; min-height: 0; margin: 0 16px; grid-template-rows: 1fr 1fr auto; }
+.bmc-large > div { font-size: clamp(.95rem, 1.55vw, 1.2rem); padding: 14px 16px; line-height: 1.5; }
+.bmc-large > div b { font-size: 1.1em; display: block; margin-bottom: 4px; }
+.ipad-sdg { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 16px 14px; }
+.ipad-sdg span { color: #fff; border-radius: 8px; padding: 6px 12px; font-size: .95rem; font-weight: 600; }
+.ipad-sdg span b { font-size: 1.15em; margin-right: 4px; }
+.ipad-sdg small { margin-left: auto; color: var(--muted); }
+.ipad-3d .viewer, .ipad-3d .viewer.tall { flex: 1; height: auto; min-height: 0; margin: 0 12px 12px; }
+@media (max-width: 760px) {
+  .ipad { height: auto; min-height: 100vh; overflow: visible; }
+  .ipad-bmc .bmc { grid-template-rows: none; }
+  .ipad-bar h1 { font-size: 1rem; }
+  .ipad-3d .viewer { height: 80vh; flex: none; }
+}
