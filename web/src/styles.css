@@ -417,6 +417,3 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 .ipad-full { min-height: 44px; white-space: nowrap; }
 .ipad-bar { position: relative; }
 .ipad-tip { position: absolute; right: 18px; top: calc(100% + 4px); z-index: 60; margin: 0; max-width: 360px; background: #1d2319; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: .9rem; box-shadow: var(--shadow-lg); }
-/* ตอนเต็มจอผ่านปุ่ม Safari จะวางปุ่มกากบาทของระบบทับมุมซ้ายบน: เลื่อนชื่อแบรนด์หลบ */
-:fullscreen .ipad-bar .brand { margin-left: 64px; }
-:-webkit-full-screen .ipad-bar .brand { margin-left: 64px; }
