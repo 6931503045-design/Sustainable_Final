@@ -16,7 +16,7 @@
 >
 > เกษตรกร **ได้เงินแทนการเผา** คนในหมู่บ้าน **ได้งานขับรถรับของ** ทุกคน **ได้อากาศดีขึ้น**
 >
-> โครงการเราตอบ **SDG 4 ข้อ** *(ชี้การ์ด SDG)*: ลดฝุ่น (3) สร้างรายได้ (8) เศษพืชไม่เสียเปล่า (12) ลดโลกร้อน (13)
+> โครงการเราตอบ **SDG 4 ข้อ** *(ชี้แถบ SDG ใต้ตู้บนบอร์ด 2)*: ลดฝุ่น (3) สร้างรายได้ (8) เศษพืชไม่เสียเปล่า (12) ลดโลกร้อน (13)
 >
 > 👉 **ลองสแกน QR นี้ดูไหม ใช้ 10 วินาทีครับ/ค่ะ**
 
@@ -50,7 +50,7 @@
 **4) ปิด + ชวนลอง · 20 วิ**
 > สรุปคือ **เกษตรกรได้เงิน คนขับได้งาน โรงงานได้วัตถุดิบถูก และทุกคนได้อากาศสะอาด**
 >
-> *(ชี้การ์ด SDG ทีละใบ)* ทั้งหมดนี้ตอบ **SDG 4 ข้อ**:
+> *(ชี้แถบ SDG ใต้ตู้บนบอร์ด 2 ทีละช่อง)* ทั้งหมดนี้ตอบ **SDG 4 ข้อ**:
 > - **SDG 3 สุขภาพ:** ไม่เผา ฝุ่น PM2.5 ลดลง
 > - **SDG 8 งานและรายได้:** เกษตรกรขายเศษพืชได้ คนในหมู่บ้านได้งานขับรถ
 > - **SDG 12 ผลิตและบริโภคอย่างรับผิดชอบ:** เศษพืชกลายเป็นอาหารสัตว์ เชื้อเพลิง ปุ๋ย ไม่มีอะไรเสียเปล่า
@@ -87,7 +87,7 @@
 >
 > Farmers **get paid instead of burning**. Villagers **earn money driving pickups**. Everyone **breathes cleaner air**.
 >
-> We hit **four SDGs** *(point at the SDG cards)*: cleaner air (3), income (8), zero waste (12) and climate (13).
+> We hit **four SDGs** *(point at the SDG strip under the machine on board 2)*: cleaner air (3), income (8), zero waste (12) and climate (13).
 >
 > 👉 **Want to try it? Scan this QR, it takes 10 seconds.**
 
@@ -121,7 +121,7 @@
 **4) Close + invite · 20 s**
 > So: **farmers earn, drivers get work, buyers get cheap raw material, and everyone gets cleaner air.**
 >
-> *(point at each SDG card)* That covers **four SDGs**:
+> *(point at each box of the SDG strip on board 2)* That covers **four SDGs**:
 > - **SDG 3 Good health:** no burning, less PM2.5
 > - **SDG 8 Decent work:** farmers sell their residue, villagers earn as drivers
 > - **SDG 12 Responsible production:** crop waste becomes feed, fuel and compost, nothing is wasted
