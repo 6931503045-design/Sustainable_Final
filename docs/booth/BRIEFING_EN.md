@@ -5,7 +5,7 @@
 ---
 
 ## 1. The project in one breath
-Farmers burn crop residue because it is the **cheapest option**. We make residue **worth money**: a **3-in-1 machine** in a **village station** turns it into **animal feed, fuel briquettes or compost material**. Farmers sell through **LINE**, and a **local driver** collects it from the farm, like Grab. **Farmers earn, drivers get work, buyers get cheap raw material, everyone gets cleaner air.**
+Farmers burn crop residue because it is the **cheapest option**. We make residue **worth money**: our 3-in-1 machine **KhumKha** ("worth it" in Thai) in a **village station** turns it into **animal feed, fuel briquettes or compost material**. Farmers sell through **LINE**, and a **local driver** collects it from the farm, like Grab. **Farmers earn, drivers get work, buyers get cheap raw material, everyone gets cleaner air.**
 
 ## 2. Numbers to remember
 
@@ -21,9 +21,10 @@ Farmers burn crop residue because it is the **cheapest option**. We make residue
 | South | almost no burning (haze comes from Indonesian peat fires) |
 | PM2.5 avoided | **~8 g per kg** of residue not burned (estimate) |
 
-### The machine
+### The machine: KhumKha
 | Fact | Number |
 |---|---|
+| Name | **KhumKha** (คุ้มค่า) = "worth it" |
 | Size | **85 × 180 × 60 cm** (W × H × D), about a water dispenser |
 | Shredder | hammer mill, ~3 kW |
 | **A — Pellet** | animal feed / fuel pellets · yield **85%** · ~60 min per 100 kg |
@@ -89,7 +90,7 @@ Farmers burn crop residue because it is the **cheapest option**. We make residue
 | Customer relationships | LINE OA · transparent receipts · public dashboard |
 | Revenue streams | **product sales (main)** · processing fees · 10% platform fee on pickups · future: CSR sponsors, local-government clean-air budgets, carbon credits |
 | Key activities | buy, process, sell · run the LINE platform · maintain machines |
-| Key resources | 3-in-1 machine · LINE system + data · driver network · brand |
+| Key resources | KhumKha 3-in-1 machine · LINE system + data · driver network · brand |
 | Key partners | community enterprises · local government · university · mushroom farms, dairy co-ops, longan dryers · local drivers |
 | Cost structure | machine (~200k THB) · electricity (cut by solar) · residue purchases · maintenance · labour · pickup support fund |
 
@@ -112,13 +113,13 @@ Farmers burn crop residue because it is the **cheapest option**. We make residue
 ### 30 seconds (passers-by)
 > **"Ever been stuck in the smoke haze in the dry season?"** *(wait for the nod)*
 > This year Thailand burned **26 million rai** of crop residue, a record, because burning is the cheapest option for farmers.
-> So we built **Rai Mai Phao**, a machine the size of a water dispenser that turns crop waste into **animal feed, fuel briquettes or compost**, all run from **LINE**.
+> So we built **KhumKha**, Thai for "worth it": a machine the size of a water dispenser that turns crop waste into **animal feed, fuel briquettes or compost**, all run from **LINE**.
 > Farmers get paid instead of burning, villagers earn as drivers, and everyone breathes cleaner air. We hit **four SDGs**: 3, 8, 12 and 13.
 > **Want to try? Scan this QR, it takes 10 seconds.**
 
 ### 2 minutes (visitors who stop)
 1. **Board 1, problem (20 s):** "The North burned 16 million rai, the most in the country, with the highest lung-cancer rate. Farmers don't burn because they don't know better. They burn because there's no cheaper choice."
-2. **Board 2 + iPad, machine (40 s):** "This is our 3-in-1 machine. Residue goes in the top and gets shredded, then A makes animal feed, B makes fuel briquettes, C makes compost material. It weighs, photographs and checks moisture, and the receipt pops up in LINE. Fully transparent." *(hand over the iPad: X-ray slider, Show workflow)*
+2. **Board 2 + iPad, machine (40 s):** "This is KhumKha, our 3-in-1 machine. The name means 'worth it' in Thai. Residue goes in the top and gets shredded, then A makes animal feed, B makes fuel briquettes, C makes compost material. It weighs, photographs and checks moisture, and the receipt pops up in LINE. Fully transparent." *(hand over the iPad: X-ray slider, Show workflow)*
 3. **Board 3, station (40 s):** "Each village gets a station that works like a gas station. Farmers book in LINE, a local driver picks up like Grab, it's weighed and processed, and the farmer chooses to sell, consign or take it home. We pay about 1 baht per kg, and farmers pay at most 30% of the sale for pickup."
 4. **Close (20 s):** "Farmers earn, drivers get work, buyers get cheap raw material, everyone gets cleaner air. That's SDG 3, 8, 12 and 13." *(hand over the phone)* "Try selling some residue in LINE."
 
@@ -127,7 +128,7 @@ Farmers burn crop residue because it is the **cheapest option**. We make residue
 |---|---|---|---|
 | Open | boards | "We're Rai Mai Phao, the Zero-Burn Farm. We make crop waste worth more than burning it." | 10 s |
 | Problem | board 1 | "26 million rai burned in 2026, a record. The North burned 16 million and has the highest lung-cancer rate. Burning is simply the cheapest option." | 30 s |
-| Solution + demo | board 2 + **iPad in the judge's hands** | "Our 3-in-1 machine shreds residue, then makes feed, briquettes or compost. It weighs, photographs and checks moisture, then sends a receipt to LINE." *(Show workflow, X-ray)* | 50 s |
+| Solution + demo | board 2 + **iPad in the judge's hands** | "This is KhumKha, Thai for 'worth it'. Our 3-in-1 machine shreds residue, then makes feed, briquettes or compost. It weighs, photographs and checks moisture, then sends a receipt to LINE." *(Show workflow, X-ray)* | 50 s |
 | System | board 3 | "One station per village, like a gas station. Farmers book in LINE and a local driver collects, like Grab. Farmers pay at most 30% of the sale for pickup, and our fund covers the rest." | 30 s |
 | Business | iPad → **Business Model** | "Three revenue streams: product sales, processing fees, and 10% of pickup fees. A machine costs about 200,000 baht, with a rough payback of 17 months." | 40 s |
 | Sustainability | SDG strip on board 2 | "SDG 3 cleaner air, 8 income, 12 nothing wasted, 13 less carbon. People, Planet and Profit together." | 20 s |
@@ -145,6 +146,7 @@ Farmers burn crop residue because it is the **cheapest option**. We make residue
 - **Who is your customer?** Two sides: farmers who sell residue, and buyers of the products (mushroom farms, dairy co-ops, animal farms, factories with boilers).
 
 ### Machine
+- **What's the machine called?** KhumKha, Thai for "worth it": it makes not burning worth more than burning. The brand is Rai Mai Phao / Zero-Burn Farm.
 - **What does the machine make?** A: animal feed or fuel pellets, B: fuel briquettes, C: chopped material for compost, mushrooms or mulch.
 - **How fast is it?** About 15 min per 100 kg for chopping, ~60 min for pellets, ~75 min for briquettes.
 - **What if the residue is wet?** Above 20% moisture it's rejected. The station has a drying yard.

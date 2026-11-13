@@ -12,7 +12,7 @@
 >
 > ปีนี้ไทยเผาเศษพืชไป **26 ล้านไร่** สูงสุดเป็นประวัติการณ์ เพราะสำหรับเกษตรกร **เผาคือทางที่ถูกที่สุด**
 >
-> เราเลยทำ **"ไร่ไม่เผา"** ตู้ขนาดเท่าตู้กดน้ำ ที่เปลี่ยนเศษพืชเป็น **อาหารสัตว์ แท่งเชื้อเพลิง หรือวัสดุทำปุ๋ย** สั่งงานผ่าน **LINE** ได้เลย
+> เราเลยทำ **KhumKha (คุ้มค่า)** ตู้ขนาดเท่าตู้กดน้ำ ที่เปลี่ยนเศษพืชเป็น **อาหารสัตว์ แท่งเชื้อเพลิง หรือวัสดุทำปุ๋ย** สั่งงานผ่าน **LINE** ได้เลย
 >
 > เกษตรกร **ได้เงินแทนการเผา** คนในหมู่บ้าน **ได้งานขับรถรับของ** ทุกคน **ได้อากาศดีขึ้น**
 >
@@ -28,7 +28,7 @@
 > ถามว่าทำไมชาวนายังเผา? **ไม่ใช่เพราะไม่รู้ แต่เพราะไม่มีทางเลือกที่ถูกกว่า** จ้างรถไถกลบก็แพง ขนไปขายก็ไม่มีใครรับซื้อ
 
 **2) ทางออก — ชี้บอร์ด 2 (ตู้) + จอ 3D · 40 วิ**
-> นี่คือตู้ **3 in 1** ของเรา ขนาด 85 × 180 ซม. เท่าตู้กดน้ำ
+> นี่คือ **KhumKha (คุ้มค่า)** ตู้ 3 in 1 ของเรา ชื่อมาจากคำว่า "คุ้มค่า" เพราะทำให้ไม่เผาแล้วคุ้มกว่าเผา ขนาด 85 × 180 ซม. เท่าตู้กดน้ำ
 >
 > ใส่เศษพืชด้านบน เครื่องสับให้ละเอียด แล้วเลือกได้ 3 ทาง
 > - **A อัดเม็ด** เป็นอาหารสัตว์
@@ -71,6 +71,7 @@
 | ถ้าเศษพืชเปียก | ความชื้นเกิน 20% ตู้ไม่รับ ให้ฝากตากที่ลานของสถานีก่อน |
 | ทำไมไม่ไถกลบ | ไถกลบต้องจ้างรถ ไม่มีรายได้กลับมา ของเราเกษตรกรได้เงิน |
 | อาหารสัตว์ขายได้เลยไหม | ช่วงแรกใช้ในฟาร์มชุมชนก่อน ถ้าจะขายต้องขึ้นทะเบียนตามกฎหมายอาหารสัตว์ |
+| ชื่อเครื่องแปลว่าอะไร | **KhumKha = คุ้มค่า** ทำให้การไม่เผาคุ้มกว่าการเผา ส่วนแบรนด์/โครงการคือ ไร่ไม่เผา (Zero-Burn Farm) |
 | ตัวเลขจริงไหม | เป็นค่าประมาณของต้นแบบ ต้องทดสอบกับเครื่องจริงก่อน |
 | ตอบ SDG ข้อไหน | หลัก ๆ 4 ข้อ: 3 สุขภาพ · 8 งานและรายได้ · 12 ผลิตและบริโภคอย่างรับผิดชอบ · 13 รับมือโลกร้อน (เสริมได้: 7 แท่งเชื้อเพลิงชีวมวล + หลังคาโซลาร์, 15 ลดไฟลามป่า) |
 
@@ -83,7 +84,7 @@
 >
 > This year Thailand burned **26 million rai** of crop residue, a record. Why? Because for farmers, **burning is the cheapest option**.
 >
-> So we built **Rai Mai Phao**, "the farm that doesn't burn". It's a machine the size of a water dispenser that turns crop waste into **animal feed, fuel briquettes or compost material**, and you run it all from **LINE**.
+> So we built **KhumKha**, which means "worth it" in Thai. It's a machine the size of a water dispenser that turns crop waste into **animal feed, fuel briquettes or compost material**, and you run it all from **LINE**.
 >
 > Farmers **get paid instead of burning**. Villagers **earn money driving pickups**. Everyone **breathes cleaner air**.
 >
@@ -99,7 +100,7 @@
 > Why do farmers still burn? **Not because they don't know. It's because there's no cheaper choice.** Hiring a tractor to plough it in costs money, and nobody buys the waste.
 
 **2) Solution — Board 2 (machine) + 3D screen · 40 s**
-> This is our **3-in-1 machine**, 85 × 180 cm, about the size of a water dispenser.
+> This is **KhumKha**, our 3-in-1 machine. The name is Thai for "worth it", because it makes not burning worth more than burning. It's 85 × 180 cm, about the size of a water dispenser.
 >
 > Residue goes in the top, gets shredded, and then goes one of three ways:
 > - **A Pellet**: animal feed
@@ -142,6 +143,7 @@
 | What if the residue is wet? | Over 20% moisture isn't accepted. Farmers can dry it on the station's drying yard first. |
 | Why not just plough it in? | Ploughing costs money and earns nothing. With us, farmers get paid. |
 | Can you sell the animal feed? | We'll start by using it on community farms. Selling it needs registration under Thai feed law. |
+| What does the name mean? | **KhumKha** is Thai for "worth it": it makes not burning worth more than burning. The brand is Rai Mai Phao / Zero-Burn Farm. |
 | Are the numbers real? | They're prototype estimates and need testing on a real machine. |
 | Which SDGs? | Mainly four: 3 Good health · 8 Decent work · 12 Responsible production · 13 Climate action (also 7: biomass briquettes + solar roof, and 15: fewer wildfires) |
 
