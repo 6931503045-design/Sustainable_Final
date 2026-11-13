@@ -16,6 +16,8 @@
 >
 > เกษตรกร **ได้เงินแทนการเผา** คนในหมู่บ้าน **ได้งานขับรถรับของ** ทุกคน **ได้อากาศดีขึ้น**
 >
+> โครงการเราตอบ **SDG 4 ข้อ** *(ชี้การ์ด SDG)*: ลดฝุ่น (3) สร้างรายได้ (8) เศษพืชไม่เสียเปล่า (12) ลดโลกร้อน (13)
+>
 > 👉 **ลองสแกน QR นี้ดูไหม ใช้ 10 วินาทีครับ/ค่ะ**
 
 ### 🎯 ฉบับ 2 นาที (คนที่หยุดฟัง) · 4 ช่วง ชี้บอร์ดไปทีละแผ่น
@@ -48,6 +50,12 @@
 **4) ปิด + ชวนลอง · 20 วิ**
 > สรุปคือ **เกษตรกรได้เงิน คนขับได้งาน โรงงานได้วัตถุดิบถูก และทุกคนได้อากาศสะอาด**
 >
+> *(ชี้การ์ด SDG ทีละใบ)* ทั้งหมดนี้ตอบ **SDG 4 ข้อ**:
+> - **SDG 3 สุขภาพ:** ไม่เผา ฝุ่น PM2.5 ลดลง
+> - **SDG 8 งานและรายได้:** เกษตรกรขายเศษพืชได้ คนในหมู่บ้านได้งานขับรถ
+> - **SDG 12 ผลิตและบริโภคอย่างรับผิดชอบ:** เศษพืชกลายเป็นอาหารสัตว์ เชื้อเพลิง ปุ๋ย ไม่มีอะไรเสียเปล่า
+> - **SDG 13 รับมือโลกร้อน:** ลดคาร์บอนจากการเผาในที่โล่ง
+>
 > 👉 *(ยื่นมือถือ/ชี้ QR)* ลองแจ้งขายเศษพืชใน LINE ดูไหมครับ/คะ ใบรับของจะเด้งเข้ามือถือคุณเลย
 
 ### 💬 ประโยคเปิดสำรอง (เลือกใช้ตามคน)
@@ -64,6 +72,7 @@
 | ทำไมไม่ไถกลบ | ไถกลบต้องจ้างรถ ไม่มีรายได้กลับมา ของเราเกษตรกรได้เงิน |
 | อาหารสัตว์ขายได้เลยไหม | ช่วงแรกใช้ในฟาร์มชุมชนก่อน ถ้าจะขายต้องขึ้นทะเบียนตามกฎหมายอาหารสัตว์ |
 | ตัวเลขจริงไหม | เป็นค่าประมาณของต้นแบบ ต้องทดสอบกับเครื่องจริงก่อน |
+| ตอบ SDG ข้อไหน | หลัก ๆ 4 ข้อ: 3 สุขภาพ · 8 งานและรายได้ · 12 ผลิตและบริโภคอย่างรับผิดชอบ · 13 รับมือโลกร้อน (เสริมได้: 7 แท่งเชื้อเพลิงชีวมวล + หลังคาโซลาร์, 15 ลดไฟลามป่า) |
 
 ---
 
@@ -77,6 +86,8 @@
 > So we built **Rai Mai Phao**, "the farm that doesn't burn". It's a machine the size of a water dispenser that turns crop waste into **animal feed, fuel briquettes or compost material**, and you run it all from **LINE**.
 >
 > Farmers **get paid instead of burning**. Villagers **earn money driving pickups**. Everyone **breathes cleaner air**.
+>
+> We hit **four SDGs** *(point at the SDG cards)*: cleaner air (3), income (8), zero waste (12) and climate (13).
 >
 > 👉 **Want to try it? Scan this QR, it takes 10 seconds.**
 
@@ -110,6 +121,12 @@
 **4) Close + invite · 20 s**
 > So: **farmers earn, drivers get work, buyers get cheap raw material, and everyone gets cleaner air.**
 >
+> *(point at each SDG card)* That covers **four SDGs**:
+> - **SDG 3 Good health:** no burning, less PM2.5
+> - **SDG 8 Decent work:** farmers sell their residue, villagers earn as drivers
+> - **SDG 12 Responsible production:** crop waste becomes feed, fuel and compost, nothing is wasted
+> - **SDG 13 Climate action:** less carbon from open burning
+>
 > 👉 *(hand over the phone / point to the QR)* Want to try selling some crop waste in LINE? The receipt goes straight to your phone.
 
 ### 💬 Alternative openers
@@ -126,6 +143,7 @@
 | Why not just plough it in? | Ploughing costs money and earns nothing. With us, farmers get paid. |
 | Can you sell the animal feed? | We'll start by using it on community farms. Selling it needs registration under Thai feed law. |
 | Are the numbers real? | They're prototype estimates and need testing on a real machine. |
+| Which SDGs? | Mainly four: 3 Good health · 8 Decent work · 12 Responsible production · 13 Climate action (also 7: biomass briquettes + solar roof, and 15: fewer wildfires) |
 
 ---
 
