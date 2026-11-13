@@ -77,75 +77,77 @@
 
 ---
 
-## English
+## English (simple, A2–B2)
 
-### ⚡ 30-second version (passers-by)
-> **"Ever been stuck in the smoke haze during the dry season?"** *(wait for the nod)*
->
-> This year Thailand burned **26 million rai** of crop residue, a record. Why? Because for farmers, **burning is the cheapest option**.
->
-> So we built **KhumKha**, which means "worth it" in Thai. It's a machine the size of a water dispenser that turns crop waste into **animal feed, fuel briquettes or compost material**, and you run it all from **LINE**.
->
-> Farmers **get paid instead of burning**. Villagers **earn money driving pickups**. Everyone **breathes cleaner air**.
->
-> We hit **four SDGs** *(point at the SDG strip under the machine on board 2)*: cleaner air (3), income (8), zero waste (12) and climate (13).
->
-> 👉 **Want to try it? Scan this QR, it takes 10 seconds.**
+> Tip: short sentences, speak slowly, point at the board while you talk.
 
-### 🎯 2-minute version (visitors who stop) · point to one board at a time
+### ⚡ 30-second version (people walking past)
+> **"Do you know the smoke in the dry season?"** *(wait for a nod)*
+>
+> This year, Thailand burned **26 million rai** of farm land. That's a record. Farmers burn because **it is the cheapest way** to clean the field.
+>
+> So we made **KhumKha**. In Thai, it means **"worth it"**. It's a machine, about the size of a water dispenser. It turns crop waste into **animal food, fuel, or compost**. You use it with **LINE**.
+>
+> Farmers **get money**. People in the village **get jobs as drivers**. Everyone gets **cleaner air**.
+>
+> We help **four SDGs** *(point at the SDG boxes on board 2)*: 3, 8, 12 and 13.
+>
+> 👉 **"Do you want to try? Scan this QR. It takes 10 seconds."**
+
+### 🎯 2-minute version (people who stop) · one board at a time
 
 **1) Problem — Board 1 (map) · 20 s**
-> Look at this map. The North burned **16 million rai**, the most in the country, and it has the highest lung-cancer rate per person.
+> Look at this map. The North burned **16 million rai**. That's the most in Thailand. It also has the most lung cancer.
 >
-> Why do farmers still burn? **Not because they don't know. It's because there's no cheaper choice.** Hiring a tractor to plough it in costs money, and nobody buys the waste.
+> Why do farmers burn? **They know it's bad. But it's the cheapest way.** Nobody buys the waste, and a tractor costs money.
 
-**2) Solution — Board 2 (machine) + 3D screen · 40 s**
-> This is **KhumKha**, our 3-in-1 machine. The name is Thai for "worth it", because it makes not burning worth more than burning. It's 85 × 180 cm, about the size of a water dispenser.
+**2) The machine — Board 2 + iPad · 40 s**
+> This is **KhumKha**. It means "worth it" in Thai. We want not burning to be worth more than burning.
 >
-> Residue goes in the top, gets shredded, and then goes one of three ways:
-> - **A Pellet**: animal feed
-> - **B Briquette**: fuel that replaces charcoal
-> - **C Chop**: compost or mushroom substrate
+> You put crop waste in the top. The machine cuts it into small pieces. Then it makes one of three things:
+> - **A**: animal food
+> - **B**: fuel blocks, instead of charcoal
+> - **C**: compost, or material for growing mushrooms
 >
-> *(point at the screen)* It has a built-in scale, camera and moisture meter. The moment it's weighed, **a receipt pops up in LINE**. Fully transparent, so nobody argues about the weight.
+> *(show the iPad)* The machine weighs the waste, takes a photo, and checks if it's dry. Then the farmer **gets a receipt in LINE**. It's fair and clear.
 
 **3) How it works — Board 3 (station) · 40 s**
-> Each machine sits in a **village station** that works like a gas station. It takes 5 steps:
-> 1. The farmer books a pickup in LINE.
-> 2. A local driver collects it from the farm, **like Grab**.
-> 3. The load is weighed, photographed and moisture-checked at the station.
-> 4. The machine processes it.
-> 5. The farmer chooses: **sell to us, consign, or take it home**.
+> Each village has a **station**. It's like a gas station. There are 5 steps:
+> 1. The farmer asks for a pickup in LINE.
+> 2. A driver from the village picks it up, **like Grab**.
+> 3. At the station, we weigh it and check it.
+> 4. The machine makes the product.
+> 5. The farmer chooses: **sell it to us**, **let us sell it for them**, or **take it home**.
 >
-> We pay about **1 baht per kg**. The farmer pays no more than **30% of the sale** for the pickup. Our fund covers the rest, and the driver still gets the full fare.
+> We pay about **1 baht per kilo**. For the pickup, the farmer pays **30% of the sale or less**. Our fund pays the rest. The driver always gets the full fee.
 
-**4) Close + invite · 20 s**
-> So: **farmers earn, drivers get work, buyers get cheap raw material, and everyone gets cleaner air.**
+**4) End — 20 s**
+> So: **farmers get money, drivers get work, buyers get cheap material, and everyone gets cleaner air.**
 >
-> *(point at each box of the SDG strip on board 2)* That covers **four SDGs**:
-> - **SDG 3 Good health:** no burning, less PM2.5
-> - **SDG 8 Decent work:** farmers sell their residue, villagers earn as drivers
-> - **SDG 12 Responsible production:** crop waste becomes feed, fuel and compost, nothing is wasted
-> - **SDG 13 Climate action:** less carbon from open burning
+> *(point at each SDG box on board 2)* We help four SDGs:
+> - **SDG 3, health:** no burning, less smoke
+> - **SDG 8, work:** money for farmers and drivers
+> - **SDG 12, no waste:** crop waste becomes food, fuel and compost
+> - **SDG 13, climate:** less carbon in the air
 >
-> 👉 *(hand over the phone / point to the QR)* Want to try selling some crop waste in LINE? The receipt goes straight to your phone.
+> 👉 *(give them the phone)* "Do you want to try? Sell some crop waste in LINE. You get the receipt right away."
 
-### 💬 Alternative openers
-- Students: **"Guess how much 1 kg of corn cobs is worth?"** → 1 baht, and not burning that kilo keeps about 8 g of PM2.5 out of the air.
-- Judges/lecturers: **"We turn the social cost of burning into income for the community."**
-- People watching the 3D screen: **"Tap a number on the machine to see what each part does."**
+### 💬 Other ways to start
+- Students: **"Guess: how much is 1 kilo of corn waste?"** → 1 baht. And 1 kilo not burned = about 8 grams less PM2.5.
+- Judges: **"We turn the cost of burning into money for the village."**
+- People looking at the 3D model: **"Tap a number on the machine. It shows what each part does."**
 
-### ❓ Likely questions
-| Question | Short answer |
+### ❓ Easy answers
+| Question | Answer |
 |---|---|
-| How much does the machine cost? | Roughly **150,000–300,000 baht** per unit (estimated from small shredder, pellet and briquette machines) |
-| How do you make money? | Margin on processed products + processing fees + a 10% platform cut on pickups |
-| What if the residue is wet? | Over 20% moisture isn't accepted. Farmers can dry it on the station's drying yard first. |
-| Why not just plough it in? | Ploughing costs money and earns nothing. With us, farmers get paid. |
-| Can you sell the animal feed? | We'll start by using it on community farms. Selling it needs registration under Thai feed law. |
-| What does the name mean? | **KhumKha** is Thai for "worth it": it makes not burning worth more than burning. The brand is Rai Mai Phao / Zero-Burn Farm. |
-| Are the numbers real? | They're prototype estimates and need testing on a real machine. |
-| Which SDGs? | Mainly four: 3 Good health · 8 Decent work · 12 Responsible production · 13 Climate action (also 7: biomass briquettes + solar roof, and 15: fewer wildfires) |
+| How much is the machine? | About **200,000 baht**. Maybe 150,000 to 280,000. |
+| How do you make money? | We sell the products. Farmers pay a small fee if they take the product home. We keep 10% of each pickup fee. |
+| What if it's wet? | If it's more than 20% wet, we can't take it. The farmer can dry it at the station first. |
+| Why not plough it into the soil? | That costs money and gives nothing back. With us, farmers get paid. |
+| Can you sell the animal food? | First, we use it on farms in the village. To sell it, we need a permit first. |
+| What does the name mean? | **KhumKha** means "worth it" in Thai. Not burning should be worth more than burning. |
+| Are the numbers real? | They are our best guess. We need to test a real machine. |
+| Which SDGs? | 3 health, 8 work, 12 no waste, 13 climate. Also 7 (clean energy) and 15 (less forest fire). |
 
 ---
 
