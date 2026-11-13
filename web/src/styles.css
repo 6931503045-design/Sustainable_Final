@@ -421,6 +421,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 @media (min-width: 761px) {
   html.ipad-lock, html.ipad-lock body { height: 100%; overflow: hidden; overscroll-behavior: none; }
   html.ipad-lock body { position: fixed; inset: 0; width: 100%; touch-action: manipulation; }
-  html.ipad-lock .ipad { height: 100%; }
+  html.ipad-lock .ipad { position: fixed; inset: 0; height: auto; }
   html.ipad-lock model-viewer { touch-action: none; }
 }
