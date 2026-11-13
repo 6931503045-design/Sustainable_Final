@@ -424,3 +424,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
   html.ipad-lock .ipad { position: fixed; inset: 0; height: auto; }
   html.ipad-lock model-viewer { touch-action: none; }
 }
+
+/* แถบเลื่อน Solid/X-ray และ Assembled/Exploded: ปุ่มจับใหญ่ขึ้นให้ใช้นิ้วบน iPad ได้ง่าย */
+.viewer-controls input[type='range'] { -webkit-appearance: none; appearance: none; height: 44px; background: transparent; touch-action: none; cursor: pointer; margin: 0; }
+.viewer-controls input[type='range']::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: #dfe3d8; }
+.viewer-controls input[type='range']::-moz-range-track { height: 8px; border-radius: 999px; background: #dfe3d8; }
+.viewer-controls input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; margin-top: -12px; border-radius: 50%; background: var(--green); border: 4px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+.viewer-controls input[type='range']::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: var(--green); border: 4px solid #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+.viewer-controls input[type='range']:disabled { opacity: .5; }
