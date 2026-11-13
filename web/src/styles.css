@@ -414,3 +414,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 .ipad-menu-list a { padding: 12px 14px; border-radius: 8px; text-decoration: none; color: inherit; font-weight: 500; }
 .ipad-menu-list a:hover { background: #f1efe7; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ipad-full { min-height: 44px; white-space: nowrap; }
+.ipad-bar { position: relative; }
+.ipad-tip { position: absolute; right: 18px; top: calc(100% + 4px); z-index: 60; margin: 0; max-width: 360px; background: #1d2319; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: .9rem; box-shadow: var(--shadow-lg); }
