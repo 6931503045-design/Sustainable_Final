@@ -48,7 +48,7 @@ function along(points, k) {
 }
 
 // โมเดล 3D จาก Blender: จุดชี้ชิ้นส่วน (คืออะไร/ทำอะไร/มีไว้ทำไม) + flow การทำงาน + X-ray + แยกชิ้น
-export default function ModelViewer({ tall = false, poster = true, onReady }) {
+export default function ModelViewer({ tall = false, poster = true, onReady, lockScroll = false }) {
   const t = useT();
   const ref = useRef(null);
   const walls = useRef([]);
@@ -286,7 +286,7 @@ export default function ModelViewer({ tall = false, poster = true, onReady }) {
         src={ASSET.glb}
         alt={t('โมเดล 3 มิติ ตู้แปรรูปเศษวัสดุเกษตร ไร่ไม่เผา', '3D model of the Rai Mai Phao crop-residue processor')}
         camera-controls
-        touch-action="pan-y"
+        touch-action={lockScroll ? 'none' : 'pan-y'}
         auto-rotate={!flow && !selected && !reducedMotion ? true : undefined}
         interpolation-decay="120"
         shadow-intensity="1"

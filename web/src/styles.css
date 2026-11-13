@@ -417,3 +417,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visibl
 .ipad-full { min-height: 44px; white-space: nowrap; }
 .ipad-bar { position: relative; }
 .ipad-tip { position: absolute; right: 18px; top: calc(100% + 4px); z-index: 60; margin: 0; max-width: 360px; background: #1d2319; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: .9rem; box-shadow: var(--shadow-lg); }
+/* ล็อกการเลื่อนหน้าในหน้า iPad (iOS Safari ชอบเลื่อน/เด้งทั้งหน้าเวลาลากนิ้ว) */
+@media (min-width: 761px) {
+  html.ipad-lock, html.ipad-lock body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  html.ipad-lock body { position: fixed; inset: 0; width: 100%; touch-action: manipulation; }
+  html.ipad-lock .ipad { height: 100%; }
+  html.ipad-lock model-viewer { touch-action: none; }
+}
