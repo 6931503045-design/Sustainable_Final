@@ -51,6 +51,8 @@ const TEAM_LINKS = [
   ['/kiosk', 'nav.kiosk'],
   ['/dashboard', 'nav.dashboard'],
   ['/booth', 'nav.booth'],
+  ['/ipad/bmc', 'nav.ipadBmc'],
+  ['/ipad/3d', 'nav.ipad3d'],
 ];
 
 export function Nav() {
