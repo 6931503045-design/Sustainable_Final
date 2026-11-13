@@ -1,6 +1,7 @@
 // หน้าสำหรับ iPad ตั้งที่บูธ: Business Model Canvas เต็มจอ (แนวนอน)
 import BMC from '../components/BMC.jsx';
-import { LangToggle, useT } from '../lib/i18n.jsx';
+import IpadBar from '../components/IpadBar.jsx';
+import { useT } from '../lib/i18n.jsx';
 
 const SDGS = [
   [3, '#4C9F38', 'สุขภาพดี', 'Good health'],
@@ -13,11 +14,7 @@ export default function IpadBmc() {
   const t = useT();
   return (
     <div className="ipad ipad-bmc">
-      <header className="ipad-bar">
-        <span className="brand">🌾 {t('ไร่ไม่เผา', 'Rai Mai Phao')}</span>
-        <h1>Business Model Canvas</h1>
-        <LangToggle />
-      </header>
+      <IpadBar title="Business Model Canvas" />
       <BMC large />
       <footer className="ipad-sdg" aria-label="SDGs">
         {SDGS.map(([n, c, th, en]) => (
