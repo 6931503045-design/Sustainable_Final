@@ -1,5 +1,6 @@
 // หน้าสำหรับ iPad ตั้งที่บูธ: Business Model Canvas เต็มจอ (แนวนอน)
 import BMC from '../components/BMC.jsx';
+import useLockScroll from '../lib/useLockScroll.js';
 import IpadBar from '../components/IpadBar.jsx';
 import { useT } from '../lib/i18n.jsx';
 
@@ -12,6 +13,7 @@ const SDGS = [
 
 export default function IpadBmc() {
   const t = useT();
+  useLockScroll();
   return (
     <div className="ipad ipad-bmc">
       <IpadBar title="Business Model Canvas" />
