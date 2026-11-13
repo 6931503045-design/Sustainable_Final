@@ -121,6 +121,50 @@ ys_ = put(stat, M + smoke.width + GAP, yl + 40, 'บอร์ด 1 · 0.63 M rai
 put(mm, M + smoke.width + GAP, ys_, 'บอร์ด 2 · Moisture meter (ขนาดเท่าบนบอร์ด)')
 used = put(tractor, M, y2, f'รถแทรกเตอร์ (กว้าง {tractor.width / PXCM:.1f} ซม.)')
 assert used <= A3H - 50, used / PXCM
+
+# ---- SDG 4 ข้อหลัก (กรอบ 2x2 ข้างรถแทรกเตอร์) ----
+FB = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+FR = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+SDGS = [
+    (3, (0x4C, 0x9F, 0x38), 'GOOD HEALTH\nAND WELL-BEING', 'Less smoke and PM2.5', 'ลดฝุ่น PM2.5 ลดโรคทางเดินหายใจ'),
+    (8, (0xA2, 0x19, 0x42), 'DECENT WORK AND\nECONOMIC GROWTH', 'Income for farmers & drivers', 'เกษตรกรและคนขับในหมู่บ้านมีรายได้'),
+    (12, (0xBF, 0x8B, 0x2E), 'RESPONSIBLE\nCONSUMPTION\nAND PRODUCTION', 'Crop waste → feed, fuel, compost', 'เศษพืชเป็นอาหารสัตว์ เชื้อเพลิง ปุ๋ย'),
+    (13, (0x3F, 0x7E, 0x44), 'CLIMATE\nACTION', 'No open burning, less CO₂', 'ไม่เผาในที่โล่ง ลดคาร์บอน'),
+]
+gx = M + tractor.width + GAP
+avail_w = A3W - M - gx
+avail_h = A3H - 50 - y2
+cw = (avail_w - GAP) // 2
+cap_h = round(1.35 * PXCM)
+sq = min(cw, (avail_h - GAP - 2 * (cap_h + 26)) // 2)
+def fit(d2, txt, path, size, maxw):
+    while size > 8:
+        f = ImageFont.truetype(path, size)
+        if max(d2.textlength(line, font=f) for line in txt.split('\n')) <= maxw:
+            return f
+        size -= 1
+    return ImageFont.truetype(path, size)
+def sdg_card(n, col, title, en, th):
+    W = cw
+    im = Image.new('RGB', (W, sq + cap_h), 'white')
+    d2 = ImageDraw.Draw(im)
+    d2.rectangle((0, 0, W - 1, sq - 1), fill=col)
+    pad = round(sq * 0.07)
+    fn = ImageFont.truetype(FB, round(sq * 0.36))
+    d2.text((pad, round(sq * 0.02)), str(n), font=fn, fill='white')
+    ft = fit(d2, title, FB, round(sq * 0.095), W - 2 * pad)
+    d2.multiline_text((pad, round(sq * 0.46)), title, font=ft, fill='white', spacing=round(sq * 0.02))
+    fe = fit(d2, en, FB, round(cap_h * 0.27), W - 12)
+    fth = fit(d2, th, '/usr/share/fonts/opentype/tlwg/Loma.otf', round(cap_h * 0.29), W - 12)
+    d2.text((6, sq + round(cap_h * 0.08)), en, font=fe, fill=(30, 36, 51))
+    d2.text((6, sq + round(cap_h * 0.5)), th, font=fth, fill=(60, 66, 80))
+    d2.rectangle((0, 0, W - 1, sq + cap_h - 1), outline=(60, 60, 60), width=2)
+    return im
+for i, args in enumerate(SDGS):
+    cx = gx + (i % 2) * (cw + GAP)
+    cy = y2 + (i // 2) * (sq + cap_h + 26 + GAP)
+    put(sdg_card(*args), cx, cy, f'SDG {args[0]}' + (f' (การ์ด {cw / PXCM:.1f} × {(sq + cap_h) / PXCM:.1f} ซม.)' if i == 0 else ''))
+print('sdg square cm', round(sq / PXCM, 2))
 print("w", (M + smoke.width + GAP + stat.width)/PXCM, (M + logo.width + GAP + qr.width)/PXCM, A3W/PXCM)
 pg.save(OUT, resolution=DPI)
 pg.resize((pg.width // 4, pg.height // 4)).save(OUT.replace('.pdf', '_preview.jpg'))
